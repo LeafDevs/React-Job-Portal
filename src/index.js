@@ -1,13 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './index.css';
 import App from './App';
+import Postings from './sites/Postings';
+import Auth from './sites/Auth';
 import reportWebVitals from './reportWebVitals';
-
+import Application from './sites/Application';
+import About from './sites/About';
+import Dashboard from './sites/Dashboard';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/postings" element={<Postings />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/application/:jobId" element={<Application />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/dash" element={<Dashboard />} />
+      </Routes>
+    </Router>
   </React.StrictMode>
 );
 
