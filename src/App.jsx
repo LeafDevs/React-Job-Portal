@@ -7,10 +7,6 @@ import Footer from '@/components/ui/footer'
 import Raleway from './fonts/Raleway.ttf'
 
 
-
-
-
-
 function App() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const images = [
@@ -26,6 +22,7 @@ function App() {
   ]
 
   useEffect(() => {
+
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length)
     }, 5000)
@@ -34,11 +31,11 @@ function App() {
   }, [])
 
   return (
-    <div className={`bg-[#f7efd7] text-[#341A00] min-h-screen flex flex-col items-center justify-center ${Raleway.className}`}>
+    <div className={`bg-[#f7efd7] text-[#341A00] min-h-screen flex flex-col items-center justify-center w-full`}>
       <Nav />
       <main className="flex flex-col items-center mt-8">
         <h2 className="text-2xl mb-4">Welcome to Highlands High School</h2>
-        <Card className="bg-[#341A00] text-[#C7AC59] p-4 rounded-lg shadow-lg w-3/4">
+        <Card className="bg-[#341A00] text-[#C7AC59] p-4 rounded-lg shadow-lg w-2/4">
           <CardHeader> </CardHeader>
           <CardContent>
             <img 

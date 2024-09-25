@@ -10,7 +10,7 @@ function Auth() {
   };
 
   return (
-    <div className="bg-[#f7efd7] text-[#341A00] min-h-screen flex flex-col items-center justify-center">
+  <div className={`bg-[#f7efd7] text-[#341A00] min-h-screen flex flex-col items-center justify-center w-full`}>
       <Card className="bg-white text-[#341A00] p-8 rounded-lg shadow-lg w-3/4 md:w-1/2 lg:w-1/3">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold mb-4">
