@@ -166,10 +166,10 @@ const jobPostings = [
 ];
 
 const allTags = [
-  "Fast Food", "Retail", "Warehouse", "Office", "Delivery", "Food Service",
-  "Hospitality", "Security", "Landscaping", "Customer Service", "Grocery",
-  "Fitness", "Automotive", "Entertainment", "Animal Care", "Management",
-  "Sales", "Logistics", "Administrative", "Driving"
+  "Fast Food", "Customer Service", "Entry Level", "Retail", "Library", "Organization",
+  "Office", "Administrative", "Automotive", "Physical Labor", "Food Service",
+  "Entertainment", "Evening Shift", "Animal Care", "Gardening", "Recreation",
+  "Physical Activity", "Flexible Schedule"
 ];
 
 function Postings() {
@@ -237,7 +237,7 @@ function Postings() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f7efd7] text-[#341A00]">
+<div className={`bg-[#f7efd7] text-[#341A00] min-h-screen flex flex-col items-center justify-center w-full`}>
       <Nav />
       <div className="flex-grow p-4 md:p-8">
         <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center"></h1>
@@ -293,8 +293,9 @@ function Postings() {
             className={`rounded-full p-2 ${
               showTags ? 'bg-[#341A00]' : 'bg-[#C7AC59]'
             }`}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
             <Tag className={`w-6 h-6 ${
               showTags ? 'text-[#C7AC59]' : 'text-[#341A00]'
@@ -304,24 +305,18 @@ function Postings() {
             {showTags && (
               <motion.div 
                 className="flex flex-wrap gap-2"
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={{
-                  visible: {
-                    transition: {
-                      staggerChildren: 0.05
-                    }
-                  }
-                }}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
               >
                 {allTags.map((tag, index) => (
                   <motion.div
                     key={index}
-                    variants={{
-                      hidden: { opacity: 0, x: -20 },
-                      visible: { opacity: 1, x: 0 }
-                    }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
                   >
                     <Badge 
                       variant={selectedTags.includes(tag) ? "default" : "secondary"}
@@ -329,7 +324,7 @@ function Postings() {
                         selectedTags.includes(tag) 
                           ? "bg-[#341A00] text-[#C7AC59]" 
                           : "bg-[#C7AC59] text-[#341A00]"
-                      } hover:bg-[#341A00] hover:text-[#C7AC59]`}
+                      } hover:bg-[#341A00] hover:text-[#C7AC59] transition-colors duration-200`}
                       onClick={() => handleTagFilter(tag)}
                     >
                       {tag}
@@ -377,6 +372,7 @@ function Postings() {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

@@ -6,4 +6,20 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f7efd7;
+    font-family: 'Raleway', sans-serif;
 }
+
+@font-face {
+    font-family: 'Raleway';
+    src: url('../public/fonts/Raleway.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('../public/fonts/Inter.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
