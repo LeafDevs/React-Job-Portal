@@ -33,12 +33,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-16 bg-white dark:bg-[#341A00] dark:text-white">
+        <section className="py-16 bg-white dark:bg-[rgb(32,32,32)] dark:text-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold mb-8 text-center text-[#341A00] dark:text-white">Announcements</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
-                <Card key={i} className="border-[#C7AC59] shadow-md">
+                <Card key={i} className={`border-[#C7AC59] shadow-md ${i % 2 === 0 ? 'bg-[#F5F5F5] dark:bg-zinc-900' : 'bg-[#E5E5E5] dark:bg-zinc-950'}`}>
                   <CardHeader>
                     <CardTitle className="text-[#341A00] dark:text-white">Important Announcement {i}</CardTitle>
                     <CardDescription className="text-[#5A3000] dark:text-white">Posted on May {i + 14}, 2023</CardDescription>
@@ -47,7 +47,7 @@ export default function HomePage() {
                     <p className="text-[#341A00] dark:text-white">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
                   </CardContent>
                   <CardFooter>
-                    <Button variant="link" className="text-[#C7AC59] hover:text-[#A08339] dark:text-white dark:hover:text-[#C7AC59]">Read More</Button>
+                    <Button variant="link" className={`text-[#C7AC59] hover:text-[#A08339] dark:text-white dark:hover:text-[#C7AC59] ${i % 2 === 0 ? 'bg-zinc-950' : 'bg-zinc-800'}`}>Read More</Button>
                   </CardFooter>
                 </Card>
               ))}
@@ -55,7 +55,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-16 bg-[#F5F5F5] dark:bg-[#341A00] dark:text-white">
+        <section className="py-16 bg-[#F5F5F5] dark:bg-[rgb(42,42,42)] dark:text-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold mb-8 text-center text-[#341A00] dark:text-white">Featured Programs</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -74,7 +74,7 @@ export default function HomePage() {
                     <p className="text-[#5A3000] dark:text-white">{program.description}</p>
                   </CardContent>
                   <CardFooter className="justify-center">
-                    <Button variant="outline" className="border-[#C7AC59] text-[#341A00] hover:bg-[#C7AC59] hover:text-white dark:text-white dark:hover:bg-[#341A00]">Learn More</Button>
+                    <Button variant="outline" className="border-[#C7AC59] text-[#341A00] hover:bg-[#C7AC59] hover:text-white dark:text-white">Learn More</Button>
                   </CardFooter>
                 </Card>
               ))}
@@ -82,7 +82,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="py-16 bg-white dark:bg-[#341A00] dark:text-white">
+        <section className="py-16 bg-white dark:bg-[rgb(32,32,32)] dark:text-white">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold mb-8 text-center text-[#341A00] dark:text-white">Upcoming Events</h2>
             <div className="space-y-4">
@@ -92,7 +92,7 @@ export default function HomePage() {
                 { date: "October 9th", title: "NO SCHOOL FOR STUDENTS - Teacher Professional Development Day", description: "No School For Students" },
                 { date: "October 17th", title: "\"FALL FOLLIES\" HIGH SCHOOL TALENT SHOW (HS Aud.)", description: "Show your school spirit and enjoy the talent show!" },
               ].map((event, index) => (
-                <Card key={index} className="border-[#C7AC59] shadow-md">
+                <Card key={index} className={`border-[#C7AC59] shadow-md ${index % 2 === 0 ? 'bg-[#F5F5F5] dark:bg-zinc-900' : 'bg-[#E5E5E5] dark:bg-zinc-950'}`}>
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-[#341A00] dark:text-white">{event.title}</CardTitle>

@@ -3,14 +3,16 @@ import { Menu, Sun, Moon, ChevronLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Nav() {
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === "dark")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
     }
   }, [isDarkMode])
 
@@ -49,6 +51,30 @@ export default function Nav() {
             >
               <ChevronLeft className={`h-6 w-6 ${isMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="md:hidden bg-[#F5F5F5] dark:bg-[#341A00] w-full absolute top-16 left-0 shadow-md"
+                >
+                  <ul className="flex flex-col space-y-4 p-4">
+                    {['Home', 'About', 'Academics', 'Athletics', 'Contact'].map((item, index) => (
+                      <motion.li key={item} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
+                        <a
+                          href="#"
+                          className="block px-3 py-2 rounded-md text-sm font-medium text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
+                        >
+                          {item}
+                        </a>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="bg-[#F5F5F5] dark:bg-[#341A00] p-2 rounded-full text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300"
@@ -57,7 +83,7 @@ export default function Nav() {
             </button>
             <a
               href="#"
-              className="hidden md:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#341A00] dark:text-[#341A00] bg-[#C7AC59] dark:bg-[#C7AC59] hover:text-[#C7AC59] hover:bg-[#341A00] dark:hover:bg-[#341A00] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C7AC59] transition-colors duration-300"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#341A00] dark:text-[#341A00] bg-[#C7AC59] dark:bg-[#C7AC59] hover:text-[#C7AC59] hover:bg-[#341A00] dark:hover:bg-[#341A00] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C7AC59] transition-colors duration-300"
             >
               Login
             </a>
