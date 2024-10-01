@@ -17,7 +17,7 @@ export default function Nav() {
   }, [isDarkMode])
 
   return (
-    <header className={`bg-[#F5F5F5] dark:bg-[#341A00] backdrop-blur-md fixed w-full z-50 transition-colors duration-300`}>
+    <header className={`bg-[#F5F5F5] dark:bg-[#341A00] backdrop-blur-md fixed w-full z-50 transition-colors duration-300 shadow-lg drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)]`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -58,7 +58,7 @@ export default function Nav() {
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="md:hidden bg-[#F5F5F5] dark:bg-[#341A00] w-full absolute top-16 left-0 shadow-md"
+                  className="md:hidden bg-[#F5F5F5] dark:bg-[#341A00] w-full absolute top-16 left-0 drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)]"
                 >
                   <ul className="flex flex-col space-y-4 p-4">
                     {['Home', 'About', 'Academics', 'Athletics', 'Contact'].map((item, index) => (
