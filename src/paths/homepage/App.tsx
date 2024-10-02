@@ -30,11 +30,11 @@ export default function HomePage() {
         <section className="bg-gray-200 text-white py-20 relative items-center" style={{ backgroundImage: `url(${bgImage})`, height: '70vh', margin: '0 auto', transition: 'background-image 1s ease-in-out', backgroundSize: 'cover', backgroundRepeat: 'no-repeat' }}>
         </section>
         <div className="py-16 relative">
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('@/assets/bg-white.png')] bg-repeat-y bg-cover bg-center dark:bg-[url('@/assets/bg.png')] backdrop-filter backdrop-blur-[20px] border-t-25 border-b-25 border-stone-400 rounded-t-25 rounded-b-25"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('@/assets/bg-white-4.png')] bg-repeat-y bg-cover bg-center dark:bg-[url('@/assets/bg.png')] backdrop-filter backdrop-blur-[20px] border-t-25 border-b-25 border-stone-400 rounded-t-25 rounded-b-25"></div>
           <div className="relative">
             <section className="mb-16">
               <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-bold mb-8 text-center text-white dark:text-white">Announcements</h2>
+                <h2 className="text-3xl font-bold mb-8 text-center text-zinc-950 dark:text-white">Announcements</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[{
                       date: "September 30th",
@@ -49,7 +49,7 @@ export default function HomePage() {
                   {
                       date: "September 19th",
                       title: "Picture Day!",
-                      description: "It's that time of the year again! School picture season is here. You can order your child's picture here. This is a great opportunity to capture their school year memories. Don't miss out!"
+                      description: "It's that time of the year again! School picture season is here. You can order your child's picture here. This is a great opportunity to capture their school year memories. Don't miss out! Order your pictures today!"
                   }
                   ].map((announcement, index) => (
                     <Card key={index} className={`border-1.5 border-[#C7AC59] drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)] ${index % 2 === 0 ? 'bg-[#F5F5F5] dark:bg-zinc-800' : 'bg-[#E5E5E5] dark:bg-zinc-900'}`}>
@@ -61,7 +61,7 @@ export default function HomePage() {
                         <p className="text-[#341A00] dark:text-white">{announcement.description}</p>
                       </CardContent>
                       <CardFooter>
-                        <Button variant="link" className={`text-[#C7AC59] hover:border-[#C7AC59] hover:text-[#A08339] dark:text-white dark:hover:text-[#C7AC59] ${index % 2 === 0 ? 'bg-zinc-950' : 'bg-zinc-800'}`}>Read More</Button>
+                        <Button variant="link" className={`text-[#C7AC59] hover:border-[#C7AC59] hover:text-[#A08339] dark:text-white dark:hover:text-[#C7AC59] ${index % 2 === 0 ? 'bg-zinc-700 dark:bg-zinc-950' : 'bg-zinc-800 dark:bg-zinc-800'}`}>Read More</Button>
                       </CardFooter>
                     </Card>
                   ))}
@@ -71,7 +71,7 @@ export default function HomePage() {
 
               <section className="mb-16">
                 <div className="container mx-auto px-4">
-                  <h2 className="text-3xl font-bold mb-8 text-center text-white dark:text-white">Featured Programs</h2>
+                  <h2 className="text-3xl font-bold mb-8 text-center text-zinc-950 dark:text-white">Featured Programs</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
                       { icon: GraduationCap, title: "Academic Excellence", description: "At Highlands we strive for excellence in academics, providing a rigorous and supportive learning environment for all students." },
@@ -98,7 +98,7 @@ export default function HomePage() {
 
               <section className="mb-16">
                 <div className="container mx-auto px-4">
-                  <h2 className="text-3xl font-bold mb-8 text-center text-white dark:text-white">Upcoming Events</h2>
+                  <h2 className="text-3xl font-bold mb-8 text-center text-zinc-950 dark:text-white">Upcoming Events</h2>
                   <div className="space-y-4">
                     {[
                       { date: "September 30th - October 4th", title: "Homecoming Spirit Week - All Schools!", description: "https://www.goldenrams.com/cms/lib/PA01000390/Centricity/Domain/1/2024%20HoCo%20Spirit%20Week%20Facebook%20Post.jpg" },
