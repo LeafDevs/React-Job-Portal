@@ -3,25 +3,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Calendar, GraduationCap, Library, Users } from "lucide-react"
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
-import { useState, useEffect } from 'react'
 import bgImage from '@/assets/Untitled-1.png'
-import wallpaper from '@/assets/bg.png'
 
 export default function HomePage() {
-  const [imageIndex, setImageIndex] = useState(0)
-  const [expandedEvent, setExpandedEvent] = useState(false)
-  const images = [
-    'https://images.pexels.com/photos/5920740/pexels-photo-5920740.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    'https://images.pexels.com/photos/4353585/pexels-photo-4353585.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    'https://images.pexels.com/photos/1557228/pexels-photo-1557228.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-  ]
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setImageIndex((prevIndex) => (prevIndex + 1) % images.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [images.length])
 
   return (
     <div className="flex flex-col min-h-screen bg-[rgba(39,39,42,.5)] text-white dark:bg-zinc-950 dark:text-[#341A00]">

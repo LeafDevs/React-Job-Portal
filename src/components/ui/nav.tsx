@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Menu, Sun, Moon, ChevronLeft, Home as HomeIcon, Briefcase as JobIcon, User as AuthIcon } from 'lucide-react'
+import { Sun, Moon, ChevronLeft, Home as HomeIcon, Briefcase as JobIcon, User as AuthIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
 
 export default function Nav() {
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === "dark")
@@ -21,7 +22,7 @@ export default function Nav() {
   }, [isMenuOpen])
 
   return (
-    <header className={`bg-[#F5F5F5] dark:bg-[#341A00] backdrop-blur-md fixed w-full z-50 transition-colors duration-300 shadow-lg drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)]`}>
+    <header className={`bg-[#F5F5F5] dark:bg-[#341A00] backdrop-blur-md fixed w-full z-50 transition-colors duration-300 shadow-lg drop-shadow-[0_5px_12px_rgba(0,0,0,0.4)]`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center cursor-pointer" onClick={() => window.location.href = '/'}>
@@ -41,12 +42,12 @@ export default function Nav() {
                   { name: 'Login', icon: <AuthIcon className="h-6 w-6 hover:underline" /> }
                 ].map((item, index) => (
                   <motion.li key={item.name} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
-                    <a
-                      href={item.name === 'Login' ? "/auth" : item.name === 'Job Portal' ? "/postings" : item.name === 'Home' ? "/" : ""}
+                    <Link
+                      to={item.name === 'Login' ? "/auth" : item.name === 'Job Portal' ? "/postings" : item.name === 'Home' ? "/" : ""}
                       className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
                     >
                       {item.icon}
-                    </a>
+                    </Link>
                   </motion.li>
                 ))}
               </AnimatePresence>
@@ -75,12 +76,12 @@ export default function Nav() {
                       { name: 'Auth', icon: <AuthIcon className="h-6 w-6" /> }
                     ].map((item, index) => (
                       <motion.li key={item.name} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
-                        <a
-                          href={item.name === 'Login' ? "/auth" : item.name === 'Jobs Portal' ? "/postings" : item.name === 'Home' ? "/" : ""}
+                        <Link
+                          to={item.name === 'Login' ? "/auth" : item.name === 'Jobs Portal' ? "/postings" : item.name === 'Home' ? "/" : ""}
                           className="flex items-center block px-3 py-2 rounded-md text-sm font-medium text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
                         >
                           {item.icon}
-                        </a>
+                        </Link>
                       </motion.li>
                     ))}
                   </ul>
@@ -93,12 +94,12 @@ export default function Nav() {
             >
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
-            <a
-              href="#"
+            <Link
+              to="/auth"
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-[#341A00] dark:text-[#341A00] bg-[#C7AC59] dark:bg-[#C7AC59] hover:text-[#C7AC59] hover:bg-[#341A00] dark:hover:bg-[#341A00] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#C7AC59] transition-colors duration-300"
             >
               Login
-            </a>
+            </Link>
           </div>
         </div>
       </div>

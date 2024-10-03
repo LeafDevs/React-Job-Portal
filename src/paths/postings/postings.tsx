@@ -5,7 +5,7 @@ import Footer from "@/components/ui/footer"
 import { ForwardRefExoticComponent, RefAttributes, SetStateAction, useState } from 'react'
 import { CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Briefcase, MapPin, DollarSign, TagIcon, ShoppingBasket, ForkKnife, Coffee, User, Home, Truck, LucideProps } from 'lucide-react' // Importing icons from lucide-react
+import { Briefcase, MapPin, DollarSign, TagIcon, ShoppingBasket, ForkKnife, Coffee, Home, Truck, LucideProps } from 'lucide-react' // Importing icons from lucide-react
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu" // Importing dropdown components
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog" // Importing dialog components
 
@@ -15,7 +15,7 @@ const jobListings = [
     company: "Walmart",
     location: "Natrona Heights, PA",
     description: "As a Retail Cashier at Walmart, you will provide excellent customer service while processing transactions and assisting customers with their purchases.",
-    payrate: 12,
+    payrate: 14,
     tags: ["Retail", "Customer Service"],
     icon: ShoppingBasket, // Default icon
     questions: [
@@ -25,11 +25,11 @@ const jobListings = [
     ]
   },
   {
-    title: "Fast Food Crew Worker",
+    title: "Crew Member",
     company: "McDonald's",
     location: "Natrona Heights, PA",
     description: "Join our vibrant team at McDonald's, where your positive attitude and enthusiasm will help create a welcoming environment for our customers. Be part of a fast-paced team that values service and smiles!",
-    payrate: 11,
+    payrate: 13,
     tags: ["Food Service", "Teamwork"],
     icon: ForkKnife, // Default icon
     questions: [
@@ -42,7 +42,7 @@ const jobListings = [
     company: "Harvest Moon Coffee & Chocolates",
     location: "Tarentum, PA",
     description: "Join our friendly team at Harvest Moon Coffee & Chocolates, where you'll serve delicious coffee and pastries while providing excellent customer service.",
-    payrate: 13,
+    payrate: 15,
     tags: ["Food Service", "Customer Service"],
     icon: Coffee, // Default icon
     questions: [
@@ -56,7 +56,7 @@ const jobListings = [
     company: "Pizza Hut",
     location: "Natrona Heights, PA",
     description: "As a Delivery Driver at Pizza Hut, you will be responsible for delivering pizzas and ensuring customer satisfaction.",
-    payrate: 10,
+    payrate: 14,
     tags: ["Delivery", "Customer Service"],
     icon: Truck, // Icon for delivery
     questions: [
@@ -168,7 +168,6 @@ export default function JobPostings() {
                     key={tag} 
                     checked={selectedTags.includes(tag)} 
                     onClick={() => toggleTag(tag)} // Updated to toggle multiple tags
-                    stayOpen // Keep the dropdown open
                   >
                     <TagIcon className="mr-2" /> {/* Icon for each tag */}
                     {tag}
@@ -209,7 +208,7 @@ export default function JobPostings() {
                     <p className="text-[#341A00] dark:text-white">{job.description}</p>
                   </CardContent>
                   <CardFooter className="flex justify-center mb-4">
-                    <Button variant="primary" onClick={() => openDialog(job)} className="bg-zinc-300 dark:bg-zinc-900">Apply</Button>
+                    <Button variant="secondary" onClick={() => openDialog(job)} className="bg-zinc-300 dark:bg-zinc-900 text-black dark:text-white">Apply</Button>
                   </CardFooter>
                 </Card>
               ))
@@ -220,7 +219,7 @@ export default function JobPostings() {
         </div>
       </main>
       <Footer />
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} className="bg-white dark:bg-zinc-800">
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-white dark:bg-zinc-800">
           <DialogHeader>
             <DialogTitle className="text-black dark:text-white">{currentJob?.title}</DialogTitle>
@@ -228,7 +227,7 @@ export default function JobPostings() {
               Please answer the following questions:
             </DialogDescription>
           </DialogHeader>
-          {currentJob?.questions.map((question: String, qIndex: string | number) => (
+          {currentJob?.questions.map((question: string, qIndex: string | number) => ( // Changed String to string
             <Input 
               key={qIndex}
               placeholder={question} 
@@ -242,8 +241,8 @@ export default function JobPostings() {
             />
           ))}
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setIsDialogOpen(false)} className="bg-zinc-300 dark:bg-zinc-600">Close</Button>
-            <Button className="bg-zinc-400 dark:bg-zinc-700" variant="primary" onClick={handleSubmit}>Submit</Button>
+            <Button variant="secondary" onClick={() => setIsDialogOpen(false)} className="bg-zinc-300 dark:bg-zinc-600 text-black dark:text-white">Close</Button>
+            <Button className="bg-zinc-400 dark:bg-zinc-700 text-black dark:text-white" variant="secondary" onClick={handleSubmit}>Submit</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

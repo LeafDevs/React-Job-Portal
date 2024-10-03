@@ -1,11 +1,9 @@
 import { SetStateAction, useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
-import bgImage from '@/assets/Untitled-1.png'
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
