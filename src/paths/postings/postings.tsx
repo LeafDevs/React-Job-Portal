@@ -2,11 +2,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
-import { SetStateAction, useState } from 'react'
+import { ForwardRefExoticComponent, RefAttributes, SetStateAction, useState } from 'react'
 import { CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Briefcase, MapPin, DollarSign, TagIcon, ShoppingBasket, ForkKnife, Coffee, User, Home, Truck } from 'lucide-react' // Importing icons from lucide-react
+import { Briefcase, MapPin, DollarSign, TagIcon, ShoppingBasket, ForkKnife, Coffee, User, Home, Truck, LucideProps } from 'lucide-react' // Importing icons from lucide-react
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu" // Importing dropdown components
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog" // Importing dialog components
 
 const jobListings = [
   {
@@ -16,7 +17,12 @@ const jobListings = [
     description: "As a Retail Cashier at Walmart, you will provide excellent customer service while processing transactions and assisting customers with their purchases.",
     payrate: 12,
     tags: ["Retail", "Customer Service"],
-    icon: ShoppingBasket // Default icon
+    icon: ShoppingBasket, // Default icon
+    questions: [
+      "What experience do you have in customer service?",
+      "How would you handle a difficult customer?",
+      "What do you think is the most important quality for a cashier?"
+    ]
   },
   {
     title: "Fast Food Crew Worker",
@@ -25,7 +31,11 @@ const jobListings = [
     description: "Join our vibrant team at McDonald's, where your positive attitude and enthusiasm will help create a welcoming environment for our customers. Be part of a fast-paced team that values service and smiles!",
     payrate: 11,
     tags: ["Food Service", "Teamwork"],
-    icon: ForkKnife // Default icon
+    icon: ForkKnife, // Default icon
+    questions: [
+      "How do you prioritize tasks during busy hours?",
+      "Can you describe a time when you worked as part of a team?"
+    ]
   },
   {
     title: "Cafe Worker",
@@ -34,7 +44,12 @@ const jobListings = [
     description: "Join our friendly team at Harvest Moon Coffee & Chocolates, where you'll serve delicious coffee and pastries while providing excellent customer service.",
     payrate: 13,
     tags: ["Food Service", "Customer Service"],
-    icon: Coffee // Default icon
+    icon: Coffee, // Default icon
+    questions: [
+      "What is your favorite coffee drink and why?",
+      "How would you handle a customer complaint?",
+      "What experience do you have with food preparation?"
+    ]
   },
   {
     title: "Delivery Driver",
@@ -43,7 +58,11 @@ const jobListings = [
     description: "As a Delivery Driver at Pizza Hut, you will be responsible for delivering pizzas and ensuring customer satisfaction.",
     payrate: 10,
     tags: ["Delivery", "Customer Service"],
-    icon: Truck // Icon for delivery
+    icon: Truck, // Icon for delivery
+    questions: [
+      "How do you ensure timely deliveries?",
+      "What would you do if you encountered a problem on your route?"
+    ]
   },
   {
     title: "Sales Associate",
@@ -52,7 +71,12 @@ const jobListings = [
     description: "Join our team at Target as a Sales Associate, where you will assist customers and maintain store presentation.",
     payrate: 14,
     tags: ["Retail", "Sales"],
-    icon: Briefcase // Icon for sales
+    icon: Briefcase, // Icon for sales
+    questions: [
+      "How do you approach upselling products?",
+      "What strategies do you use to maintain a clean and organized store?",
+      "Can you give an example of a time you provided excellent customer service?"
+    ]
   },
   {
     title: "Warehouse Worker",
@@ -61,13 +85,32 @@ const jobListings = [
     description: "As a Warehouse Worker at Amazon, you will be responsible for picking, packing, and shipping orders.",
     payrate: 15,
     tags: ["Warehouse", "Logistics"],
-    icon: Home // Icon for warehouse
+    icon: Home, // Icon for warehouse
+    questions: [
+      "What experience do you have in a warehouse environment?",
+      "How do you ensure accuracy in your work?"
+    ]
   },
 ];
+
+// Define the Job type if not already defined
+type Job = {
+    title: string;
+    company: string;
+    location: string;
+    description: string;
+    payrate: number;
+    tags: string[];
+    icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
+    questions: string[];
+};
 
 export default function JobPostings() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]); // Changed to an array for multiple tags
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // State for dialog visibility
+  const [answers, setAnswers] = useState<string[]>([]); // State for answers to questions
+  const [currentJob, setCurrentJob] = useState(jobListings[0]); // Set default currentJob to the first job in jobListings
 
   const filteredJobs = jobListings.filter(job => 
     (job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -87,6 +130,21 @@ export default function JobPostings() {
 
   const resetTags = () => {
     setSelectedTags([]);
+  };
+
+  const handleSubmit = () => {
+    // Handle the submit logic here
+    console.log("Answers:", answers);
+    setIsDialogOpen(false); // Close the dialog after submission
+  };
+
+  const openDialog = (job: SetStateAction<{
+      title: string; company: string; location: string; description: string; payrate: number; tags: string[]; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>> // Default icon
+      questions: string[]
+    }>) => {
+    setCurrentJob(job as Job);
+    setAnswers(Array((job as Job).questions.length).fill('')); // Initialize answers array
+    setIsDialogOpen(true);
   };
 
   return (
@@ -132,7 +190,7 @@ export default function JobPostings() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.length > 0 ? (
               filteredJobs.map((job, index) => (
-                <Card key={index} className="border-1.5 border-[#C7AC59] bg-[#F5F5F5] dark:bg-zinc-800 flex flex-col drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)]">
+                <Card key={index} className="border-1.5 border-[#C7AC59] bg-[#F5F5F5] text-black dark:text-white dark:bg-zinc-800 flex flex-col drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)]">
                   <CardHeader>
                     <CardTitle className="text-[#341A00] dark:text-white flex items-center">
                       {job.icon ? <job.icon className="mr-2" /> : <Briefcase className="mr-2" />} {/* Job icon with default */}
@@ -151,7 +209,7 @@ export default function JobPostings() {
                     <p className="text-[#341A00] dark:text-white">{job.description}</p>
                   </CardContent>
                   <CardFooter className="flex justify-center mb-4">
-                    <Button variant="outline" className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white">Apply Now</Button>
+                    <Button variant="primary" onClick={() => openDialog(job)} className="bg-zinc-300 dark:bg-zinc-900">Apply</Button>
                   </CardFooter>
                 </Card>
               ))
@@ -162,6 +220,33 @@ export default function JobPostings() {
         </div>
       </main>
       <Footer />
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} className="bg-white dark:bg-zinc-800">
+        <DialogContent className="bg-white dark:bg-zinc-800">
+          <DialogHeader>
+            <DialogTitle className="text-black dark:text-white">{currentJob?.title}</DialogTitle>
+            <DialogDescription className="text-gray-700 dark:text-gray-300">
+              Please answer the following questions:
+            </DialogDescription>
+          </DialogHeader>
+          {currentJob?.questions.map((question: String, qIndex: string | number) => (
+            <Input 
+              key={qIndex}
+              placeholder={question} 
+              value={answers[Number(qIndex)] || ''} 
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const newAnswers = [...answers];
+                newAnswers[Number(qIndex)] = e.target.value;
+                setAnswers(newAnswers);
+              }} 
+              className="mb-4 bg-gray-100 dark:bg-zinc-700 text-black dark:text-white"
+            />
+          ))}
+          <DialogFooter>
+            <Button variant="secondary" onClick={() => setIsDialogOpen(false)} className="bg-zinc-300 dark:bg-zinc-600">Close</Button>
+            <Button className="bg-zinc-400 dark:bg-zinc-700" variant="primary" onClick={handleSubmit}>Submit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

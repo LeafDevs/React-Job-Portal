@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Menu, Sun, Moon, ChevronLeft } from 'lucide-react'
+import { Menu, Sun, Moon, ChevronLeft, Home as HomeIcon, Briefcase as JobIcon, User as AuthIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Nav() {
@@ -35,13 +35,17 @@ export default function Nav() {
           <nav className="hidden md:block">
             <ul className="flex space-x-4">
               <AnimatePresence>
-                {isMenuOpen && ['Home', 'Job Portal', 'Login'].map((item, index) => (
-                  <motion.li key={item} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
+                {isMenuOpen && [
+                  { name: 'Home', icon: <HomeIcon className="h-6 w-6 hover:underline" /> },
+                  { name: 'Job Portal', icon: <JobIcon className="h-6 w-6 hover:underline" /> },
+                  { name: 'Login', icon: <AuthIcon className="h-6 w-6 hover:underline" /> }
+                ].map((item, index) => (
+                  <motion.li key={item.name} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
                     <a
-                      href={item === 'Login' ? "/auth" : item === 'Job Portal' ? "/postings" : item === 'Home' ? "/" : ""}
-                      className="px-3 py-2 rounded-md text-sm font-medium text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
+                      href={item.name === 'Login' ? "/auth" : item.name === 'Job Portal' ? "/postings" : item.name === 'Home' ? "/" : ""}
+                      className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
                     >
-                      {item}
+                      {item.icon}
                     </a>
                   </motion.li>
                 ))}
@@ -65,13 +69,17 @@ export default function Nav() {
                   className="md:hidden bg-[#F5F5F5] dark:bg-[#341A00] w-full absolute top-16 left-0 drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)]"
                 >
                   <ul className="flex flex-col space-y-4 p-4">
-                    {['Home', 'Jobs Portal', 'Auth'].map((item, index) => (
-                      <motion.li key={item} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
+                    {[
+                      { name: 'Home', icon: <HomeIcon className="h-6 w-6" /> },
+                      { name: 'Jobs Portal', icon: <JobIcon className="h-6 w-6" /> },
+                      { name: 'Auth', icon: <AuthIcon className="h-6 w-6" /> }
+                    ].map((item, index) => (
+                      <motion.li key={item.name} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
                         <a
-                          href={item === 'Login' ? "/auth" : item === 'Job Portal' ? "/postings" : item === 'Home' ? "/" : ""}
-                          className="block px-3 py-2 rounded-md text-sm font-medium text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
+                          href={item.name === 'Login' ? "/auth" : item.name === 'Jobs Portal' ? "/postings" : item.name === 'Home' ? "/" : ""}
+                          className="flex items-center block px-3 py-2 rounded-md text-sm font-medium text-[#341A00] dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
                         >
-                          {item}
+                          {item.icon}
                         </a>
                       </motion.li>
                     ))}

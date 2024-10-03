@@ -24,11 +24,12 @@ export default function HomePage() {
   }, [images.length])
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#341A00] text-white dark:bg-white dark:text-[#341A00]">
+    <div className="flex flex-col min-h-screen bg-[rgba(39,39,42,.5)] text-white dark:bg-zinc-950 dark:text-[#341A00]">
       <Nav />
       <main className="flex-grow">
         <section className="bg-gray-200 text-white py-20 relative items-center" style={{ backgroundImage: `url(${bgImage})`, height: '70vh', margin: '0 auto', transition: 'background-image 1s ease-in-out', backgroundSize: 'cover', backgroundRepeat: 'no-repeat' }}>
         </section>
+        <div className="h-12 bg-zinc-200 dark:bg-zinc-800"></div>
         <div className="py-16 relative">
           <div className="absolute top-0 left-0 w-full h-full bg-[url('@/assets/bg-white-4.png')] bg-repeat-y bg-cover bg-center dark:bg-[url('@/assets/bg.png')] backdrop-filter backdrop-blur-[20px] border-t-25 border-b-25 border-stone-400 rounded-t-25 rounded-b-25"></div>
           <div className="relative">
