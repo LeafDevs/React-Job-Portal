@@ -43,6 +43,9 @@ export default function Footer() {
               </div>
             </div>
           </div>
+          <div className='mt-4 text-center bg-[#341A00]'>
+
+          </div>
           <div className="mt-8 text-center">
             <p>&copy; 2023 Highlands School District. All rights reserved.</p>
           </div>

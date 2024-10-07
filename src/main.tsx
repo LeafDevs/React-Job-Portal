@@ -1,19 +1,16 @@
-import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import App from './paths/homepage/App.tsx'
-import Auth from './paths/auth/Auth.tsx'
+import App from './paths/homepage/index.tsx'
+import Auth from './paths/auth/index.tsx'
 import './index.css'
-import JobPostings from './paths/postings/postings.tsx'
+import JobPostings from './paths/postings/index.tsx'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Router>
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path='/postings' element={<JobPostings />}/>
-        </Routes>
-    </Router>
-  </StrictMode>,
+  <Router>
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path='/postings' element={<JobPostings />}/>
+      </Routes>
+  </Router>
 )

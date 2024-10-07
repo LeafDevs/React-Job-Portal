@@ -12,9 +12,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 const jobListings = [
   {
     title: "Retail Cashier",
-    company: "Walmart",
+    company: "Martwell",
     location: "Natrona Heights, PA",
-    description: "As a Retail Cashier at Walmart, you will provide excellent customer service while processing transactions and assisting customers with their purchases.",
+    description: "As a Retail Cashier at Martwell, you will provide excellent customer service while processing transactions and assisting customers with their purchases.",
     payrate: 14,
     tags: ["Retail", "Customer Service"],
     icon: ShoppingBasket, // Default icon
@@ -26,7 +26,7 @@ const jobListings = [
   },
   {
     title: "Crew Member",
-    company: "McDonald's",
+    company: "WcDonald's",
     location: "Natrona Heights, PA",
     description: "Join our vibrant team at McDonald's, where your positive attitude and enthusiasm will help create a welcoming environment for our customers. Be part of a fast-paced team that values service and smiles!",
     payrate: 13,
@@ -39,7 +39,7 @@ const jobListings = [
   },
   {
     title: "Cafe Worker",
-    company: "Harvest Moon Coffee & Chocolates",
+    company: "Harvest Glow Coffee & Treats",
     location: "Tarentum, PA",
     description: "Join our friendly team at Harvest Moon Coffee & Chocolates, where you'll serve delicious coffee and pastries while providing excellent customer service.",
     payrate: 15,
@@ -53,7 +53,7 @@ const jobListings = [
   },
   {
     title: "Delivery Driver",
-    company: "Pizza Hut",
+    company: "Pizza Shed",
     location: "Natrona Heights, PA",
     description: "As a Delivery Driver at Pizza Hut, you will be responsible for delivering pizzas and ensuring customer satisfaction.",
     payrate: 14,
@@ -66,7 +66,7 @@ const jobListings = [
   },
   {
     title: "Sales Associate",
-    company: "Target",
+    company: "AimMart",
     location: "Natrona Heights, PA",
     description: "Join our team at Target as a Sales Associate, where you will assist customers and maintain store presentation.",
     payrate: 14,
@@ -80,7 +80,7 @@ const jobListings = [
   },
   {
     title: "Warehouse Worker",
-    company: "Amazon",
+    company: "Cascade",
     location: "Pittsburgh, PA",
     description: "As a Warehouse Worker at Amazon, you will be responsible for picking, packing, and shipping orders.",
     payrate: 15,
