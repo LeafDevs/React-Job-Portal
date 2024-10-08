@@ -1,21 +1,125 @@
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, GraduationCap, Library, Users } from "lucide-react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
-import bgImage from '@/assets/Untitled-1.png'
+import bgImage from '@/assets/AdobeStock_303970286.jpeg'
+import bgImage2 from '@/assets/AdobeStock_208777709.jpeg'
+import bgImage3 from '@/assets/AdobeStock_235889550.jpeg'
+import bgImage4 from '@/assets/AdobeStock_570507998.jpeg'
+import bgImage5 from '@/assets/AdobeStock_759720772.jpeg'
+import bgImage6 from '@/assets/AdobeStock_883493509.jpeg'
 
 export default function HomePage() {
+  const imageUrls = [bgImage, bgImage2, bgImage3, bgImage6, bgImage5, bgImage4];
+  const imageData = [
+    {
+      title: 'Discover Your Path',
+      description: 'Explore diverse career opportunities and find your perfect fit.',
+      buttonText: 'Start Exploring',
+      alignment: 'left',
+      color: 'normal'
+    },
+    {
+      title: 'Enhance Your Skills',
+      description: 'Access comprehensive training programs to boost your career.',
+      buttonText: 'Start Training',
+      alignment: 'left',
+      color: 'normal'
+    },
+    {
+      title: 'Effortless Job Posting',
+      description: 'Employers can easily create and manage job listings.',
+      buttonText: 'Post a Job',
+      alignment: 'right',
+      color: 'normal'
+    }
+  ];
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentDataIndex, setCurrentDataIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
+      setCurrentDataIndex((prevIndex) => (prevIndex + 1) % imageData.length);
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-[rgba(39,39,42,.5)] text-white dark:bg-zinc-950 dark:text-[#341A00]">
       <Nav />
       <main className="flex-grow">
-        <section className="bg-gray-200 text-white py-20 relative items-center" style={{ backgroundImage: `url(${bgImage})`, height: '70vh', margin: '0 auto', transition: 'background-image 1s ease-in-out', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}>
-          <div className="flex flex-col justify-center items-left h-full p-12 w-2/3 max-w-xl font-poppins">
-              <h2 className="text-6xl text-left whitespace-normal break-words font-poppins font-bold">Find Your Job</h2>
-              <p className="text-2xl mt-6 text-left whitespace-normal break-words font-poppins">Discover exciting career opportunities in the Highlands School District.</p>
-              <Button className="rounded-md bg-[#C7AC59] mt-8 w-2/3 max-h-lg text-xl py-4 hover:bg-[#341A00] text-white">Find Jobs!</Button>
+        <section className="relative h-[70vh] overflow-hidden">
+          {imageUrls.map((imageUrl, index) => (
+            <div
+              key={index}
+              className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{
+                backgroundImage: `url(${imageUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+          ))}
+          <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center p-12">
+            <div 
+              className="w-2/3 max-w-xl font-poppins transition-all duration-1000 ease-in-out"
+              style={{
+                alignSelf: imageData[currentDataIndex].alignment === 'right' ? 'flex-end' : 'flex-start',
+                textAlign: imageData[currentDataIndex].alignment === 'right' ? 'right' : 'left'
+              }}
+            >
+              <h2 className="text-6xl font-bold text-[#f5f5f5] whitespace-normal break-words drop-shadow-[0_4px_2px_rgba(0,0,0,1)]">
+                {imageData[currentDataIndex].title}
+              </h2>
+              <p className="text-2xl mt-6 text-[#f5f5f5] whitespace-normal break-words drop-shadow-[0_4px_2px_rgba(0,0,0,1)]">
+                {imageData[currentDataIndex].description}
+              </p>
+              <Button 
+                className={`
+                  rounded-md bg-[#C7AC59] mt-8 w-1/3 max-h-lg text-xl py-4 text-[#f5f5f5] 
+                  transition-colors duration-300 cursor-pointer
+                  hover:bg-[#341A00] hover:text-[#C7AC59]
+                `}
+              >
+                {imageData[currentDataIndex].buttonText}
+              </Button>
+              <div className={`flex mt-8 space-x-4 ${
+                imageData[currentDataIndex].alignment === 'right' ? 'justify-end' : 'justify-start'
+              }`}>
+                {[0, 1, 2].map((index) => (
+                  <svg
+                    key={index}
+                    className={`max-w-3 max-h-3 w-3 h-3 rounded-full transition-colors duration-300 cursor-pointer ${
+                      currentDataIndex === index
+                        ? 'bg-[#C7AC59]'
+                        : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                    }`}
+                    onClick={() => {
+                      const randomIndex = index === 0 ? (Math.random() < 0.5 ? 0 : 3) : index === 1 ? (Math.random() < 0.5 ? 1 : 4) : (Math.random() < 0.5 ? 2 : 5);
+                      setCurrentImageIndex(randomIndex);
+                      setCurrentDataIndex(index);
+                    }}
+                    aria-label={`View image ${index + 1}`}
+                    style={{
+                      borderRadius: '50%',
+                      display: 'inline-block',
+                      maxWidth: '3rem',
+                      maxHeight: '3rem',
+                    }}
+                  >
+                    <circle cx="1.5" cy="1.5" r="1.5" fill={currentDataIndex === index ? '#C7AC59' : 'white'} />
+                  </svg>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
         <div className="relative">
