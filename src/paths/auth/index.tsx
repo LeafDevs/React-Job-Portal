@@ -48,7 +48,7 @@ export default function Auth() {
             </Card>
         </div>
       </main>
-      <Footer />
+      <Footer string={'blocky'} />
     </div>
   )
 }

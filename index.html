@@ -16,12 +16,57 @@
     <meta name="twitter:description" content="Explore job postings and career opportunities with FBLA." />
     <meta name="twitter:image" content="/logo.svg" />
     <meta name="twitter:url" content="https://preview.lesbians.monster" />
-    <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <title>FBLA Job Portal - Preview</title>
   </head>
-  <body style="font-family: 'Poppins', sans-serif;">
+  <body style="font-family: 'Raleway', sans-serif;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
+  <script type="module">
+    import text from './src/lib/translate.ts'
+
+    let currentLang = localStorage.getItem('language') || 'en';
+    let isTranslated = false;
+
+    async function translatePage() {
+      console.log('Starting translation process');
+      const language = localStorage.getItem('language') || 'en';
+      console.log('Current language:', language);
+      const elements = document.body.getElementsByTagName('*');
+      console.log('Number of elements to check:', elements.length);
+
+      if(language === currentLang && isTranslated) {
+        console.log('Page already translated, skipping');
+        return;
+      }
+      
+      let translatedCount = 0;
+      for (const element of elements) {
+        if (element.childNodes.length === 1 && element.childNodes[0].nodeType === Node.TEXT_NODE) {
+          const originalText = element.textContent.trim();
+          if (originalText && !element.closest('header')) {
+            console.log('Translating:', originalText);
+            try {
+              const translatedText = await text(originalText, language);
+              element.textContent = translatedText;
+              translatedCount++;
+            } catch (error) {
+              console.error('Translation error:', error);
+            }
+          }
+        }
+      }
+      console.log('Translation complete. Translated', translatedCount, 'elements');
+      isTranslated = true;
+      currentLang = language;
+      console.log('Updated currentLang:', currentLang);
+    }
+
+    setTimeout(translatePage, 10);
+            
+    
+  </script>
 </html>

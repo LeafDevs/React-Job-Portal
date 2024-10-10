@@ -5,7 +5,7 @@ import Footer from "@/components/ui/footer"
 import { ForwardRefExoticComponent, RefAttributes, SetStateAction, useState } from 'react'
 import { CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Briefcase, MapPin, DollarSign, TagIcon, ShoppingBasket, ForkKnife, Coffee, Home, Truck, LucideProps } from 'lucide-react' // Importing icons from lucide-react
+import { Briefcase, MapPin, DollarSign, TagIcon, ShoppingBasket, ForkKnife, Coffee, Home, Truck, LucideProps, AlertCircle } from 'lucide-react' // Importing icons from lucide-react
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu" // Importing dropdown components
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog" // Importing dialog components
 
@@ -18,6 +18,7 @@ const jobListings = [
     payrate: 14,
     tags: ["Retail", "Customer Service"],
     icon: ShoppingBasket, // Default icon
+    requirements: "HS diploma, math skills, customer service exp.",
     questions: [
       "What experience do you have in customer service?",
       "How would you handle a difficult customer?",
@@ -32,6 +33,7 @@ const jobListings = [
     payrate: 13,
     tags: ["Food Service", "Teamwork"],
     icon: ForkKnife, // Default icon
+    requirements: "16+, fast-paced work, good communication",
     questions: [
       "How do you prioritize tasks during busy hours?",
       "Can you describe a time when you worked as part of a team?"
@@ -45,6 +47,7 @@ const jobListings = [
     payrate: 15,
     tags: ["Food Service", "Customer Service"],
     icon: Coffee, // Default icon
+    requirements: "Food service exp, coffee knowledge, early shifts",
     questions: [
       "What is your favorite coffee drink and why?",
       "How would you handle a customer complaint?",
@@ -59,6 +62,7 @@ const jobListings = [
     payrate: 14,
     tags: ["Delivery", "Customer Service"],
     icon: Truck, // Icon for delivery
+    requirements: "Valid driver's license, clean driving record",
     questions: [
       "How do you ensure timely deliveries?",
       "What would you do if you encountered a problem on your route?"
@@ -72,6 +76,7 @@ const jobListings = [
     payrate: 14,
     tags: ["Retail", "Sales"],
     icon: Briefcase, // Icon for sales
+    requirements: "Retail exp, customer service skills, flexible",
     questions: [
       "How do you approach upselling products?",
       "What strategies do you use to maintain a clean and organized store?",
@@ -86,6 +91,7 @@ const jobListings = [
     payrate: 15,
     tags: ["Warehouse", "Logistics"],
     icon: Home, // Icon for warehouse
+    requirements: "Physical stamina, attention to detail",
     questions: [
       "What experience do you have in a warehouse environment?",
       "How do you ensure accuracy in your work?"
@@ -102,6 +108,7 @@ type Job = {
     payrate: number;
     tags: string[];
     icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>;
+    requirements: string;
     questions: string[];
 };
 
@@ -152,7 +159,7 @@ export default function JobPostings() {
       <Nav />
       <main className="flex-grow">
         <div className="container mx-auto px-4 py-8 mt-24">
-          <h1 className="text-3xl font-bold mb-6 text-center">Jobs Portal</h1>
+          <h1 className="text-5xl font-bold mb-6 text-center">Jobs Portal</h1>
           <div className="mb-6 flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -206,6 +213,13 @@ export default function JobPostings() {
                   </CardHeader>
                   <CardContent className="flex-grow">
                     <p className="text-[#341A00] dark:text-white">{job.description}</p>
+                    <div className="mt-4 flex items-center">
+                      <AlertCircle className="mr-2 text-red-500 text-2xl" /> {/* Exclamation point icon */}
+                      <p className="text-[#341A00] font-semibold text-2xl">Requirements</p>
+                    </div>
+                    <ul className="list-disc list-inside mt-2 text-[#341A00] dark:text-white">
+                      {job.requirements}
+                    </ul>
                   </CardContent>
                   <CardFooter className="flex justify-center mb-4">
                     <Button variant="secondary" onClick={() => openDialog(job)} className="bg-zinc-300 dark:bg-zinc-900 text-black dark:text-white">Apply</Button>
@@ -218,7 +232,7 @@ export default function JobPostings() {
           </div>
         </div>
       </main>
-      <Footer />
+      <Footer string={"blocky"}  />
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="bg-white dark:bg-zinc-800">
           <DialogHeader>
