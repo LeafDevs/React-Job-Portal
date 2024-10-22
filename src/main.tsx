@@ -4,7 +4,7 @@ import App from './paths/homepage/index.tsx'
 import Auth from './paths/auth/index.tsx'
 import './index.css'
 import Dashboard from '@/paths/dashboard/index.tsx'
-import JobPostings from './paths/postings/index.tsx'
+import JobPostings from './paths/postings/recode.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <Router>
