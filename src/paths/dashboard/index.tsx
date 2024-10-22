@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Users, Library, Calendar, Bell, FileText, Settings } from 'lucide-react';
+import { GraduationCap, Users, Library, Calendar, Bell, FileText, Settings, Briefcase } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Nav from '@/components/ui/nav';
@@ -16,36 +16,50 @@ export default function Dashboard() {
     const token = queryParams.get('token');
     if (token) {
       localStorage.setItem('token', token);
+      window.location.href = "/dash";
     }
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = "/auth";
-      return; // Ensure fetchData is not called if there's no token
-    }
-
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/user', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setUserName(data.name);
-        setUserRole(data.type);
-      } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
+    function run() {
+      const queryParams = new URLSearchParams(window.location.search);
+      const t = queryParams.get('token');
+      if(t) {
+        return;
       }
-    };
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = "/auth";
+        return;
+      }
 
-    fetchData();
+      const fetchData = async () => {
+        try {
+          const response = await fetch('http://localhost:3000/user', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          console.log(data);
+          if(data.code === 401) {
+            throw new Error('Unauthorized Access.')
+          }
+          setUserName(data.name);
+          setUserRole(data.type.charAt(0).toUpperCase() + data.type.slice(1)); // Capitalize the first letter of data.type
+        } catch (error) {
+          console.error('There was a problem with the fetch operation:', error);
+        }
+      };
+
+      fetchData();
+    }
+    run();
   })
 
   return (
@@ -59,8 +73,8 @@ export default function Dashboard() {
               <AvatarFallback>{userName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-bold text-zinc-950 dark:text-white">{userName}</h1>
-              <p className="text-zinc-500 dark:text-zinc-400">{userRole}</p>
+              <h1 className="text-3xl font-bold text-zinc-950 dark:text-white" data-notranslate>{userName}</h1>
+              <p className="text-zinc-500 dark:text-zinc-400" data-notranslate>{userRole}</p>
             </div>
           </div>
           <Button variant="outline">Edit Profile</Button>
@@ -99,9 +113,9 @@ export default function Dashboard() {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { icon: FileText, label: "Assignments" },
+                  { icon: FileText, label: "Messages" },
                   { icon: Calendar, label: "Schedule" },
-                  { icon: Users, label: "Clubs" },
+                  { icon: Briefcase, label: "Postings" },
                   { icon: Settings, label: "Settings" },
                 ].map((item, index) => (
                   <Button key={index} variant="outline" className="h-24 flex flex-col items-center justify-center">

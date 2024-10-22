@@ -227,7 +227,7 @@ export default function HomePage() {
                           <CardHeader>
                             <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                               <CardTitle className="text-lg md:text-xl text-[#341A00] dark:text-white">{event.title}</CardTitle>
-                              <span className="text-sm md:text-base text-[#5A3000] dark:text-white mt-2 md:mt-0">{event.date}</span>
+                              <span className="text-sm md:text-base text-[#5A3000] dark:text-white mt-2 md:mt-0" data-notranslate>{event.date}</span>
                             </div>
                           </CardHeader>
                           <CardContent>

@@ -77,7 +77,7 @@ export default function Nav() {
               alt="Highlands School District Logo"
               className="h-10 w-10 mr-2 md:h-14 md:w-14 md:mr-3"
             />
-            <span className="text-lg md:text-xl font-semibold text-white dark:text-[#C7AC59]">Highlands SD</span>
+            <span className="text-lg md:text-xl font-semibold text-white dark:text-[#C7AC59]" data-notranslate>Highlands SD</span>
           </div>
           <nav className="hidden md:block">
             <ul className="flex space-x-4">
@@ -119,7 +119,7 @@ export default function Nav() {
                 <DropdownMenuLabel>Select Language</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {Object.entries(languages).map(([key, value]) => (
-                  <DropdownMenuItem key={key} onClick={() => handleLanguageChange(key)}>
+                  <DropdownMenuItem data-notranslate key={key} onClick={() => handleLanguageChange(key)}>
                     {value as string}
                   </DropdownMenuItem>
                 ))}

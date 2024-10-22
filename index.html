@@ -47,7 +47,7 @@
       for (const element of elements) {
         if (element.childNodes.length === 1 && element.childNodes[0].nodeType === Node.TEXT_NODE) {
           const originalText = element.textContent.trim();
-          if (originalText && !element.closest('header')) {
+          if (originalText && !element.getAttribute('data-notranslate')) {
             console.log('Translating:', originalText);
             try {
               const translatedText = await text(originalText, language);

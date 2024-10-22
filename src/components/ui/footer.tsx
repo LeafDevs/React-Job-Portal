@@ -8,8 +8,8 @@ export default function Footer({ string: className }: { string: string }) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
                         <h3 className="text-xl font-bold mb-4 text-[#C7AC59]">Contact Us</h3>
-                        <p>1500 Pacific Avenue</p>
-                        <p>Natrona Heights, PA 15084</p>
+                        <p data-notranslate>1500 Pacific Avenue</p>
+                        <p data-notranslate>Natrona Heights, PA 15084</p>
                         <div className="flex items-center">
                             <Phone className="h-5 w-5 mr-2" />
                             <p>Phone: (724) 226 2400</p>
@@ -46,10 +46,10 @@ export default function Footer({ string: className }: { string: string }) {
                 </div>
                 <div className='mt-4 text-center bg-[#341A00]'></div>
                 <div className="mt-8 text-center">
-                    <p>&copy; 2024 Highlands School District. All rights reserved.</p>
+                    <p data-notranslate>&copy; 2024 Highlands School District. All rights reserved.</p>
 
                     <Separator className='mt-4 bg-[#C7AC59]'></Separator>
-                    <p className="mt-2 text-sm text-[#C7AC59]">Site Designed by <span className="font-semibold">Aaron Schriver & Vincent Rossetti</span></p>
+                    <p className="mt-2 text-sm text-[#C7AC59]">Site Designed by <span className="font-semibold" data-notranslate>Aaron Schriver & Vincent Rossetti</span></p>
                 </div>
             </div>
         </footer>
