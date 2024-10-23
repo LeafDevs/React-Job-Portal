@@ -15,6 +15,15 @@ import text from '@/lib/translate'
 
 export default function HomePage() {
   const imageUrls = [bgImage, bgImage2, bgImage3, bgImage6, bgImage5, bgImage4];
+  const imageAltTexts = [
+    'A person handing you a coffee showcasing the possibility of getting a job as a barista',
+    'An image showing someone having an intervie showcasing the training you can go under.',
+    'A visual of someone filling out an application.',
+    'An image of a delivery driver delivering food to someone.',
+    'An image depicting a student undergoing interview training',
+    'An image of employers talking showcasing them submitting a posting.'
+  ];
+  
   const [imageData, setImageData] = useState([
     {
       title: 'Discover Your Path',
@@ -85,6 +94,7 @@ export default function HomePage() {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
+              aria-label={imageAltTexts[index]} // Added alt text for accessibility
             />
           ))}
           <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center p-4 md:p-24">

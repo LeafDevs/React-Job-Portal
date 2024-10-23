@@ -32,6 +32,7 @@ export default function JobPostings() {
   const [jobListings, setJobListings] = useState<Job[]>([]);
   const [currentJob, setCurrentJob] = useState<Job | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [appPage, setAppPage] = useState(1);
   const jobsPerPage = 6;
 
   useEffect(() => {
@@ -49,9 +50,10 @@ export default function JobPostings() {
             throw new Error('Failed to fetch jobs');
           }
           const data = await response.json();
-          // Ensure that each job has a tags array
+          
           const formattedJobs: Job[] = data.map((job: any) => ({
             ...job,
+            payrate: parseFloat(job.payrate), // Convert payrate to a number
             tags: Array.isArray(job.tags) ? job.tags : [], // Default to empty array if not an array
           }));
           setJobListings(formattedJobs);
@@ -75,7 +77,12 @@ export default function JobPostings() {
     (selectedTags.length === 0 || selectedTags.some(tag => job.tags.includes(tag)))
   );
 
-  const tags = Array.from(new Set(jobListings.flatMap(job => job.tags)));
+  jobListings.forEach(job => {
+    console.log(`Job Title: ${job.title}, Tags: ${job.tags.join(', ')}`);
+    console.log(job)
+  });
+
+  const tags = ["Office", "Retail", "Customer Service", "Food Service", "Teamwork", "Warehouse", "Logistics", "Sales", "Part Time", "Full Time"]
 
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
@@ -155,47 +162,51 @@ export default function JobPostings() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentJobs.map((job, index) => (
-            <Card key={index} className="border-1.5 border-[#C7AC59] bg-[#F5F5F5] text-black dark:text-white dark:bg-zinc-800 flex flex-col drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)] hover:drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="text-[#341A00] dark:text-white flex items-center space-x-2">
-                  <Icon name={job.icon} className="w-6 h-6 text-[#C7AC59]" />
-                  <span>{job.title}</span>
-                </CardTitle>
-                <p className="text-[#5A3000] dark:text-zinc-300 flex items-center space-x-2">
-                  <MapPin size={16} />
-                  <span>{job.company} - {job.location}</span>
-                </p>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-[#341A00] dark:text-zinc-300 mb-4">{job.description}</p>
-                <div className="flex items-center space-x-2 text-[#341A00] dark:text-zinc-300">
-                  <DollarSign size={16} className="text-[#C7AC59]" />
-                  <span>Pay Rate: ${job.payrate}/hr</span>
-                </div>
-                <div className="mt-4">
-                  <h4 className="font-semibold flex items-center space-x-2 text-[#341A00] dark:text-[#C7AC59]">
-                    <AlertCircle size={16} className="text-red-500" />
-                    <span>Requirements</span>
-                  </h4>
-                  <p className="text-sm mt-1 text-[#341A00] dark:text-zinc-300">{job.requirements}</p>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {job.tags.map((tag, tagIndex) => (
-                    <span key={tagIndex} className="px-2 py-1 bg-[#C7AC59] bg-opacity-20 text-[#341A00] dark:text-[#C7AC59] text-xs rounded-full">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button onClick={() => openDialog(job)} className="w-full bg-[#C7AC59] hover:bg-[#B69B48] text-white transition-colors duration-300">
-                  Apply Now
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[400px]"> {/* Added minimum height here */}
+          {currentJobs.length > 0 ? (
+            currentJobs.map((job, index) => (
+              <Card key={index} className="border-1.5 border-[#C7AC59] bg-[#F5F5F5] text-black dark:text-white dark:bg-zinc-800 flex flex-col drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)] hover:drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all duration-300">
+                <CardHeader>
+                  <CardTitle className="text-[#341A00] dark:text-white flex items-center space-x-2">
+                    <Icon name={job.icon} className="w-6 h-6 text-[#C7AC59]" />
+                    <span>{job.title}</span>
+                  </CardTitle>
+                  <p className="text-[#5A3000] dark:text-zinc-300 flex items-center space-x-2">
+                    <MapPin size={16} />
+                    <span>{job.company} - {job.location}</span>
+                  </p>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-[#341A00] dark:text-zinc-300 mb-4">{job.description}</p>
+                  <div className="flex items-center space-x-2 text-[#341A00] dark:text-zinc-300">
+                    <DollarSign size={16} className="text-[#C7AC59]" />
+                    <span>Pay Rate: ${job.payrate}/hr</span>
+                  </div>
+                  <div className="mt-4">
+                    <h4 className="font-semibold flex items-center space-x-2 text-[#341A00] dark:text-[#C7AC59]">
+                      <AlertCircle size={16} className="text-red-500" />
+                      <span>Requirements</span>
+                    </h4>
+                    <p className="text-sm mt-1 text-[#341A00] dark:text-zinc-300">{job.requirements}</p>
+                  </div>
+                  <div className="mt-4 flex flex-wrap justify-center gap-4">
+                    {job.tags.map((tag, tagIndex) => (
+                      <span key={tagIndex} className="px-2 py-1 bg-[#C7AC59] bg-opacity-20 text-[#341A00] dark:text-[#C7AC59] text-xs rounded-full">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button onClick={() => openDialog(job)} className="w-full bg-[#C7AC59] hover:bg-[#B69B48] text-white transition-colors duration-300">
+                    Apply Now
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-xl text-red-500">No Jobs Found....</div>
+          )}
         </div>
         {filteredJobs.length > jobsPerPage && (
           <div className="mt-8 flex justify-center items-center space-x-4">
@@ -219,7 +230,12 @@ export default function JobPostings() {
           </div>
         )}
       </main>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) {
+            setAppPage(1); // Reset appPage to 1 when dialog is closed
+          }
+        }}>
         <DialogContent className="bg-[#F5F5F5] dark:bg-zinc-800 border-[#C7AC59]">
           <DialogHeader>
             <DialogTitle className="text-[#341A00] dark:text-white">{currentJob?.title}</DialogTitle>
@@ -227,7 +243,7 @@ export default function JobPostings() {
               Please answer the following questions:
             </DialogDescription>
           </DialogHeader>
-          {currentJob?.questions.map((question, qIndex) => (
+          {currentJob?.questions.slice((appPage - 1) * 2, appPage * 2).map((question, qIndex) => (
             <div key={qIndex} className="mb-4">
               <label className="block text-sm font-medium mb-1 text-[#341A00] dark:text-white">{question}</label>
               <Input 
@@ -241,9 +257,35 @@ export default function JobPostings() {
               />
             </div>
           ))}
+          <div className="mt-4 flex justify-between">
+            <Button 
+              onClick={() => setAppPage(appPage - 1)} 
+              disabled={appPage === 1}
+              variant="outline"
+              className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
+            >
+              Previous
+            </Button>
+            {appPage === Math.ceil(currentJob?.questions.length / 2) ? (
+              <Button 
+                onClick={handleSubmit} 
+                className="bg-[#C7AC59] hover:bg-[#B69B48] text-white"
+              >
+                Submit Application
+              </Button>
+            ) : (
+              <Button 
+                onClick={() => setAppPage(appPage + 1)} 
+                disabled={appPage === Math.ceil(currentJob?.questions.length / 2) + 1}
+                variant="outline"
+                className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
+              >
+                Next
+              </Button>
+            )}
+          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white">Cancel</Button>
-            <Button onClick={handleSubmit} className="bg-[#C7AC59] hover:bg-[#B69B48] text-white">Submit Application</Button>
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

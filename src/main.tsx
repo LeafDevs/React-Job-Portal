@@ -5,6 +5,7 @@ import Auth from './paths/auth/index.tsx'
 import './index.css'
 import Dashboard from '@/paths/dashboard/index.tsx'
 import JobPostings from './paths/postings/recode.tsx'
+import Logout from '@/paths/logout/index.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <Router>
@@ -13,6 +14,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/auth" element={<Auth />} />
         <Route path='/postings' element={<JobPostings />}/>
         <Route path='/dash' element={<Dashboard />}/>
+        <Route path='/logout' element={<Logout />}/>
       </Routes>
   </Router>
 )
