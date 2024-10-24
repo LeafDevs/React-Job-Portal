@@ -84,7 +84,7 @@ export default function Nav() {
               {[
                 { name: 'Home', icon: <HomeIcon className="h-6 w-6" />, path: "/" },
                 { name: 'Jobs', icon: <JobIcon className="h-6 w-6" />, path: "/postings" },
-                { name: localStorage.getItem('token') ? 'Logout' : 'Login', icon: <AuthIcon className="h-6 w-6" />, path: localStorage.getItem('token') ? "/logout" : "/auth" }
+                { name: 'Login', icon: <AuthIcon className="h-6 w-6" />, path: "/auth" }
               ].map((item) => (
                 <li key={item.name}>
                   <Link
@@ -141,7 +141,7 @@ export default function Nav() {
               {[
                 { name: 'Home', icon: <HomeIcon className="h-6 w-6" />, path: "/" },
                 { name: 'Jobs', icon: <JobIcon className="h-6 w-6" />, path: "/postings" },
-                { name: localStorage.getItem('token') ? 'Logout' : 'Login', icon: <AuthIcon className="h-6 w-6" />, path: localStorage.getItem('token') ? "/logout" : "/auth" }
+                { name: 'Login', icon: <AuthIcon className="h-6 w-6" />, path: "/auth" }
               ].map((item, index) => (
                 <motion.li key={item.name} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
                   <Link

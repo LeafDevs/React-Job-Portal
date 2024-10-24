@@ -187,9 +187,6 @@ export default function HomePage() {
                         <CardContent className="flex-grow">
                           <p className="text-sm md:text-base text-[#341A00] dark:text-white">{announcement.description}</p>
                         </CardContent>
-                        <CardFooter className="mt-auto">
-                          <Button variant="link" className={`text-sm md:text-base text-[#C7AC59] hover:border-[#C7AC59] hover:text-[#A08339] dark:text-white dark:hover:text-[#C7AC59] ${index % 2 === 0 ? 'bg-zinc-700 dark:bg-zinc-950' : 'bg-zinc-800 dark:bg-zinc-800'}`}>Read More</Button>
-                        </CardFooter>
                       </Card>
                     ))}
                     </div>

@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [imagePreview, setImagePreview] = useState("");
   const [quickLinks, setQuickLinks] = useState<any[]>([]); // Fix type error
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -81,7 +82,12 @@ export default function Dashboard() {
           { icon: Settings, label: await t("Settings", language), tooltip: await t("Modify your account settings", language), redirect: true, location: "/settings"},
         ];
 
-        setQuickLinks(links);
+        // Remove duplicates from quickLinks
+        const uniqueLinks = Array.from(new Set(links.map(link => link.label)))
+          .map(label => links.find(link => link.label === label));
+        
+        setQuickLinks(uniqueLinks);
+        setIsLoading(false);
       } catch (error) {
         console.error('There was a problem with the fetch operation:', error);
       }
@@ -143,10 +149,14 @@ export default function Dashboard() {
       <div className="flex-grow container mx-auto px-4 py-8 mt-24 mb-28">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div className="flex items-center mb-4 md:mb-0">
-            <Avatar className="h-16 w-16 mr-4">
-              <AvatarImage src={profileImage} alt={userName} />
-              <AvatarFallback>{userName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-            </Avatar>
+            {isLoading ? (
+              <div className="h-16 w-16 mr-4 bg-gray-200 animate-pulse rounded-full"></div>
+            ) : (
+              <Avatar className="h-16 w-16 mr-4">
+                <AvatarImage src={profileImage} alt={userName} />
+                <AvatarFallback>{userName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+              </Avatar>
+            )}
             <div>
               <h1 className="text-3xl font-bold text-zinc-950 dark:text-white" data-notranslate>{userName}</h1>
               <p className="text-zinc-500 dark:text-zinc-400" data-notranslate>{userRole}</p>

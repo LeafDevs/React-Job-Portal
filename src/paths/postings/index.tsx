@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
-import React, { SetStateAction, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import * as icons from 'lucide-react'

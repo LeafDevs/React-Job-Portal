@@ -121,12 +121,13 @@ export default function JobPostings() {
       <Nav/>
       <main className="container mx-auto px-4 py-8">
         <div className="relative mb-12 text-center mt-24 max-w-lg mx-auto">
-          <div className="bg-[#C7AC59] p-3 rounded-xl">
+          <div className="bg-[#C7AC59] p-3 rounded-xl shadow-xl">
             <h1 className="text-5xl font-bold text-white">Available Jobs</h1>
           </div>
           <Separator className="w-3/4 mx-auto bg-[#A08339] h-0.5" />
-          <p className="text-xl text-zinc-700 dark:text-zinc-300"><strong>Find your next career opportunity</strong></p>
         </div>
+        
+        <p className="text-xl text-zinc-700 dark:text-zinc-300 text-center mb-4"><strong>Find your next career opportunity</strong></p> {/* Moved closer to the search bar */}
         
         <div className="mb-8 flex items-center space-x-4">
           <div className="relative flex-grow">
@@ -243,7 +244,7 @@ export default function JobPostings() {
               Please answer the following questions:
             </DialogDescription>
           </DialogHeader>
-          {currentJob?.questions.slice((appPage - 1) * 2, appPage * 2).map((question, qIndex) => (
+          {Array.isArray(currentJob?.questions) && currentJob?.questions.slice((appPage - 1) * 2, appPage * 2).map((question, qIndex) => (
             <div key={qIndex} className="mb-4">
               <label className="block text-sm font-medium mb-1 text-[#341A00] dark:text-white">{question}</label>
               <Input 
@@ -266,7 +267,7 @@ export default function JobPostings() {
             >
               Previous
             </Button>
-            {appPage === Math.ceil(currentJob?.questions.length / 2) ? (
+            {appPage === Math.ceil((currentJob?.questions.length || 0) / 2) ? (
               <Button 
                 onClick={handleSubmit} 
                 className="bg-[#C7AC59] hover:bg-[#B69B48] text-white"
@@ -276,7 +277,7 @@ export default function JobPostings() {
             ) : (
               <Button 
                 onClick={() => setAppPage(appPage + 1)} 
-                disabled={appPage === Math.ceil(currentJob?.questions.length / 2) + 1}
+                disabled={appPage === Math.ceil((currentJob?.questions.length || 0) / 2) + 1}
                 variant="outline"
                 className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
               >
