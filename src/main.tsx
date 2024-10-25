@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import App from './paths/homepage/index.tsx'
-import Auth from './paths/auth/index.tsx'
+import Auth from './paths/auth/recode.tsx'
 import './index.css'
 import Dashboard from '@/paths/dashboard/index.tsx'
 import JobPostings from './paths/postings/recode.tsx'

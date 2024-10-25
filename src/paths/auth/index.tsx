@@ -2,6 +2,7 @@ import { SetStateAction, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import * as icons from 'lucide-react'
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
 
@@ -9,26 +10,88 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState(false); // State to track error
+  const [errorMessage, setErrorMessage] = useState('')
+  const [name, setName] = useState('')
 
   const handleGoogleAuth = () => {
     window.location.href = 'http://localhost:3000/auth/google';
   }
+
+  const handleLogin = () => {
+    let url = ""
+    if(isLogin) {
+        url = "http://localhost:3000/auth"
+    } else {
+      url = "http://localhost:3000/register"
+    }
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password,
+            name: name,
+        }),
+    }).then(res => res.json())
+    .then(res => console.log(res));
+  }
+
+  const passwordRequirements = () => {
+    const requirements = [
+      { text: "8 characters minimum", valid: password.length >= 8 },
+      { text: "One lowercase character", valid: /[a-z]/.test(password) },
+      { text: "One uppercase character", valid: /[A-Z]/.test(password) },
+      { text: "One number or special character", valid: /[0-9!@#$%^&*]/.test(password) },
+    ];
+    return requirements;
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#341A00] text-white dark:bg-white dark:text-[#341A00]">
       <Nav />
       <main className="flex-grow">
         <div className="w-full h-screen relative bg-[url('@/assets/bg-white-4.png')] dark:bg-[url('@/assets/bg.png')] bg-no-repeat bg-cover flex items-center justify-center">
-            <Card className={`border-1.5 border-[#C7AC59] drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)] bg-[#f5f5f5] dark:bg-zinc-900 transition-all duration-500 ease-in-out`}>
+            <Card className={`border-1.5 border-[#C7AC59] drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)] bg-[#f5f5f5] dark:bg-zinc-900 transition-all duration-500 ease-in-out max-w-sm w-full p-4`}>
                 <CardHeader>
-                    <CardTitle className="text-xl">{isLogin ? "Login" : "Register" }</CardTitle>
+                    <CardTitle className="text-xl flex items-center justify-center">{isLogin ? <><icons.User className="mr-2" /> Login</> : <><icons.User className="mr-2" /> Register</>}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Input className="bg-[#f5f5f5] dark:bg-zinc-800 focus:scale-105 transition-transform duration-300 ease-in-out focus:drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-drop-shadow duration-300" type="email" placeholder="Email"></Input>
-                    <Input className="mt-6 bg-[#f5f5f5] dark:bg-zinc-800 focus:scale-105 transition-transform duration-300 ease-in-out focus:drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-drop-shadow duration-300" type="password" placeholder="Password" value={password} onChange={(e: { target: { value: SetStateAction<string> } }) => setPassword(e.target.value)}></Input>
+                   {!isLogin && 
+                   <>
+                    <Input className={`bg-[#f5f5f5] dark:bg-zinc-800 focus:scale-105 transition-transform duration-300 ease-in-out focus:drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-drop-shadow duration-300 ${error ? 'outline outline-red-500' : ''}`} type="text" placeholder="Name" onChange={(e: { target: { value: SetStateAction<string> } }) => {
+                      setName(e.target.value);
+                      if(error) setError(false);
+                    }}></Input>
+                   </>}
+                    <Input className={`mt-4 bg-[#f5f5f5] dark:bg-zinc-800 focus:scale-105 transition-transform duration-300 ease-in-out focus:drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-drop-shadow duration-300 ${error ? 'outline outline-red-500' : ''}`} type="email" placeholder="Email" onChange={(e: { target: { value: SetStateAction<string> } }) => {
+                        setEmail(e.target.value);
+                        if (error) setError(false); // Reset error on input change
+                    }}></Input>
+                    {error && <p className="text-red-500 text-sm mt-1">{errorMessage}</p>}
+                    <Input className={`mt-4 bg-[#f5f5f5] dark:bg-zinc-800 focus:scale-105 transition-transform duration-300 ease-in-out focus:drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-drop-shadow duration-300 ${error ? 'outline outline-red-500' : ''}`} type="password" placeholder="Password" value={password} onChange={(e: { target: { value: SetStateAction<string> } }) => {
+                        setPassword(e.target.value);
+                        if (error) setError(false); // Reset error on input change
+                    }}></Input>
+                    {password && !isLogin && (
+                      <div className="mt-2">
+                        <p className="text-gray-400">Password Requirements:</p>
+                        <div className="text-gray-400 flex flex-col space-y-1">
+                          {passwordRequirements().map((req, index) => (
+                            <div key={index} className={`flex items-center ${req.valid ? "text-green-500" : "text-red-500"}`}>
+                              <icons.CheckCircle className={req.valid ? "text-green-500" : "text-red-500"} />
+                              <span className="ml-2 text-sm">{req.text}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                 {!isLogin &&
                     <>
-                        <Input className={`mt-6 bg-[#f5f5f5] dark:bg-zinc-800 focus:scale-105 transition-transform duration-300 ease-in-out focus:drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-drop-shadow duration-300 ${password !== confirmPassword ? 'outline outline-red-500' : ''}`} type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e: { target: { value: SetStateAction<string> } }) => setConfirmPassword(e.target.value)}></Input>
+                        <Input className={`mt-4 bg-[#f5f5f5] dark:bg-zinc-800 focus:scale-105 transition-transform duration-300 ease-in-out focus:drop-shadow-[0_2px_5px_rgba(0,0,0,0.8)] transition-drop-shadow duration-300 ${password !== confirmPassword ? 'outline outline-red-500' : ''}`} type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e: { target: { value: SetStateAction<string> } }) => setConfirmPassword(e.target.value)}></Input>
                         {password !== confirmPassword && <p className="text-red-500 text-sm mt-1">Passwords do not match</p>}
                     </>
                 }
@@ -42,12 +105,30 @@ export default function Auth() {
                 <span className="ml-2">{isLogin ? "Login" : "Register" } with Google</span>
                 </Button>
                 <div className="flex items-center justify-center my-4">
-                    <span className="mx-4 text-gray-400 text-sm" onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Don't have an account? Register Here!" : 'Already have an account? Login here!' }</span>
+                    <span className="mx-4 text-[#C7AC59] text-sm cursor-pointer" onClick={() => setIsLogin(!isLogin)}>{isLogin ? "Don't have an account? Register Here!" : 'Already have an account? Login here!' }</span>
                 </div>
 
                 </CardContent>
                 <CardFooter className="items-center justify-center">
-                    <Button variant="link" className={`text-[#C7AC59] hover:border-[#C7AC59] hover:text-[#A08339] dark:text-white dark:hover:text-[#C7AC59] bg-zinc-700 dark:bg-zinc-800`}>{isLogin ? "Login" : "Register"}</Button>
+                    <Button 
+                        variant="link" 
+                        className={`text-[#C7AC59] hover:border-[#C7AC59] hover:text-[#A08339] dark:text-white dark:hover:text-[#C7AC59] bg-zinc-700 dark:bg-zinc-800`}
+                        onClick={() => {
+                            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                            if (email && password && confirmPassword == password) {
+                              if(!emailPattern.test(email)) {
+                                setError(true);
+                                setErrorMessage("Must be a valid email!")
+                              }
+                              handleLogin();
+                            } else {
+                                setError(true); // Set error if email is not valid or password is not set
+                                setErrorMessage("Email and password must be set.")
+                            }
+                        }}
+                    >
+                        {isLogin ? <><icons.User className="mr-2" /> Login</> : <><icons.User className="mr-2" /> Register</>}
+                    </Button>
                 </CardFooter>
             </Card>
         </div>
