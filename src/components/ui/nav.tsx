@@ -84,7 +84,7 @@ export default function Nav() {
               {[
                 { name: 'Home', icon: <HomeIcon className="h-6 w-6" />, path: "/" },
                 { name: 'Jobs', icon: <JobIcon className="h-6 w-6" />, path: "/postings" },
-                { name: 'Login', icon: <AuthIcon className="h-6 w-6" />, path: "/auth" }
+                { name: localStorage.getItem('token') ? 'Dashboard' : 'Login', icon: <AuthIcon className="h-6 w-6" />, path: localStorage.getItem('token') ? "/dash" : "/auth" }
               ].map((item) => (
                 <li key={item.name}>
                   <Link
