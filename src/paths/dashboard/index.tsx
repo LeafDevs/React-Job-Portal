@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [userBackground, setUserBackground] = useState('bg-black/40')
   const [bannerPreview, setBannerPreview] = useState("");
+  const [postingID, setPostingId] = useState(null);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -78,27 +79,32 @@ export default function Dashboard() {
           return;
         }
 
+        console.log(data);
         setUserName(data.name);
         setUserRole(data.type.charAt(0).toUpperCase() + data.type.slice(1));
         setProfileImage(data.profile_info?.profile_picture || profileImage);
-        setUserBackground(data.profile_info?.banner || userBackground);
+        setUserBackground(`${data.profile_info?.banner || userBackground}`);
+        if (data.profile_info?.banner) {
+          document.getElementById('banner').style.backgroundImage = `url(${data.profile_info.banner})`;
+        }
+        console.log(userBackground);
 
         const language = localStorage.getItem("language") || "en";
         const links = data.type === 'student' ? [
-          { icon: FileText, label: await t("Messages", language), tooltip: await t("View your messages", language), redirect: true, location: "/messages" },
-          { icon: Calendar, label: await t("Schedule", language), tooltip: await t("Check your schedule", language), redirect: false, menu: "calendar" },
+          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
+          { icon: Calendar, label: await t("Schedule", language), tooltip: await t("This is not implemented yet.", language), redirect: false, menu: "calendar" },
           { icon: Briefcase, label: await t("Postings", language), tooltip: await t("View job postings", language), redirect: true, location: "/postings" },
-          { icon: Settings, label: await t("Settings", language), tooltip: await t("Manage your settings", language), redirect: true, location: "/settings" },
+          { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings" },
         ] : data.type === 'admin' ? [
-          { icon: FileText, label: await t("Messages", language), tooltip: await t("View your messages", language), redirect: true, location: "/messages" },
-          { icon: Briefcase, label: await t("Accounts", language), tooltip: await t("View all Accounts", language), redirect: true, location: "/admin/accounts" },
+          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
+          { icon: Briefcase, label: await t("Accounts", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/admin/accounts" },
           { icon: Briefcase, label: await t("Posts", language), tooltip: await t("View all Posts.", language), redirect: true, location: "/admin/posts" },
-          { icon: Settings, label: await t("Settings", language), tooltip: await t("Modify your account settings", language), redirect: true, location: "/settings"},
+          { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings"},
         ] : [
-          { icon: FileText, label: await t("Messages", language), tooltip: await t("View your messages", language), redirect: true, location: "/messages" },
-          { icon: Briefcase, label: await t("Applications", language), tooltip: await t("View all applications", language), redirect: true, location: "/employer/applications" },
+          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
+          { icon: Briefcase, label: await t("Applications", language), tooltip: await t("View all applications", language), redirect: true, location: "/employer/applications/"+postingID},
           { icon: Briefcase, label: await t("Posts", language), tooltip: await t("View all Posts.", language), redirect: false, menu: "posts" },
-          { icon: Settings, label: await t("Settings", language), tooltip: await t("Modify your account settings", language), redirect: true, location: "/settings"},
+          { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings"},
         ];
 
         // Remove duplicates from quickLinks
@@ -234,21 +240,21 @@ export default function Dashboard() {
         )}
         <div className="relative mb-6">
           <div className="relative h-32 rounded-lg">
-            <div className={`absolute inset-0 opacity-90 rounded-lg ${userBackground.startsWith('bg-') ? userBackground : ''}`} 
+            <div id='banner' className={`absolute inset-0 opacity-90 rounded-lg ${userBackground.startsWith('bg-') ? userBackground : ''}`} 
               style={!userBackground.startsWith('bg-') ? { backgroundImage: userBackground, backgroundSize: 'cover', backgroundPosition: 'center' } : {}} />
             <div className={`absolute inset-0 bg-black/${userBackground.startsWith('bg-gradient') ? '30' : '0'} rounded-lg`} />
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-4 right-4 z-10">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="bg-black/30 hover:bg-black/50">
                     <Settings className="h-5 w-5 text-white" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white/80 backdrop-blur-sm">
-                  <DropdownMenuItem onClick={() => setIsDialogOpen(true)}>
+                <DropdownMenuContent align="end" className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm">
+                  <DropdownMenuItem onClick={() => setIsDialogOpen(true)} className="text-zinc-900 dark:text-zinc-100">
                     Edit Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = "/logout"} className="text-red-600">
+                  <DropdownMenuItem onClick={() => window.location.href = "/logout"} className="text-red-600 dark:text-red-400">
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
