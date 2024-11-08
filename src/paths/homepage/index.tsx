@@ -10,7 +10,7 @@ import bgImage3 from '@/assets/AdobeStock_235889550.jpeg'
 import bgImage4 from '@/assets/AdobeStock_570507998.jpeg'
 import bgImage5 from '@/assets/AdobeStock_759720772.jpeg'
 import bgImage6 from '@/assets/AdobeStock_883493509.jpeg'
-import texture from '@/assets/Texture.webp'
+import texture from '@/assets/girth.jpg'
 import text from '@/lib/translate'
 
 export default function HomePage() {
@@ -23,6 +23,10 @@ export default function HomePage() {
     'An image depicting a student undergoing interview training',
     'An image of employers talking showcasing them submitting a posting.'
   ];
+
+  useEffect(() => {
+    document.title = 'Highlands Career Center | HHS';
+  }, []);
   
   const [imageData, setImageData] = useState([
     {
@@ -212,7 +216,7 @@ export default function HomePage() {
                             <p className="text-sm md:text-base text-[#5A3000] dark:text-white">{program.description}</p>
                           </CardContent>
                           <CardFooter className="mt-auto">
-                            <Button variant="outline" className="w-full text-sm md:text-base border-[#C7AC59] hover:border-[#C7AC59] text-[#341A00] hover:bg-[#C7AC59] hover:text-white dark:text-white">Learn More</Button>
+                            <Button variant="outline" className="w-full text-sm md:text-base border-[#C7AC59] hover:border-[#C7AC59] text-[#341A00] hover:bg-[#C7AC59] hover:text-white dark:text-white" disabled>Learn More</Button>
                           </CardFooter>
                         </Card>
                       ))}

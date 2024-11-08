@@ -9,6 +9,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import graphic from "@/assets/ram.avif"
 
 export default function Component() {
@@ -18,12 +24,53 @@ export default function Component() {
     const [email, setEmail] = useState('')
     const [name, setName] = useState('')
     const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === "dark")
+    const [showPasswordReset, setShowPasswordReset] = useState(false)
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmNewPassword, setConfirmNewPassword] = useState('')
+    const [error, setError] = useState('')
 
     const handleGoogleAuth = () => {
         window.location.href = 'http://localhost:3000/auth/google'
     }
+    useEffect(() => {
+        document.title = 'Login | HHS';
+      }, []);
+
+    const handlePasswordReset = async () => {
+        if (newPassword !== confirmNewPassword) {
+            setError('New passwords do not match');
+            return;
+        }
+
+        try {
+            const response = await fetch("http://localhost:3000/reset-password", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password: password, newPassword }),
+            });
+
+            const data = await response.json();
+            if (data.code === 200) {
+                setShowPasswordReset(false);
+                setPassword(newPassword);
+                handleLogin();
+            } else {
+                setError(data.error || 'Failed to reset password');
+            }
+        } catch (error) {
+            setError('Error during password reset. Please try again.');
+            console.error('Error during password reset:', error);
+        }
+    }
 
     const handleLogin = async () => {
+        setError(''); // Clear any previous errors
+
+        if (password.toLowerCase() === 'password') {
+            setShowPasswordReset(true);
+            return;
+        }
+
         const url = isLogin ? "http://localhost:3000/auth" : "http://localhost:3000/register"
         try {
             const response = await fetch(url, {
@@ -33,7 +80,8 @@ export default function Component() {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const data = await response.json();
+                throw new Error(data.error || 'Authentication failed');
             }
 
             if (response.redirected) {
@@ -45,9 +93,14 @@ export default function Component() {
             if (data.code === 200) {
                 window.location.href = 'http://localhost:5173/dash?token=' + encodeURIComponent(data.token);
             } else {
-                console.error('Login failed:', data.error);
+                setError(data.error || 'Login failed');
             }
-        } catch (error) {
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                setError(error.message || 'An error occurred during login');
+            } else {
+                setError('An error occurred during login');
+            }
             console.error('Error during login:', error);
         }
     }
@@ -71,6 +124,44 @@ export default function Component() {
 
     return (
         <div className="flex min-h-screen bg-white dark:bg-zinc-900 relative">
+            <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
+                <DialogContent className="w-[90vw] max-w-md mx-auto p-4 sm:p-6 rounded-lg">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-lg sm:text-xl font-semibold text-center">Change Password Required</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="new-password" className="text-sm sm:text-base">New Password</Label>
+                            <Input 
+                                id="new-password" 
+                                type="password" 
+                                placeholder="Enter new password"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className="w-full text-sm sm:text-base p-2"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirm-new-password" className="text-sm sm:text-base">Confirm New Password</Label>
+                            <Input 
+                                id="confirm-new-password" 
+                                type="password" 
+                                placeholder="Confirm new password"
+                                value={confirmNewPassword}
+                                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                className="w-full text-sm sm:text-base p-2"
+                            />
+                        </div>
+                        {error && <p className="text-red-500 text-sm">{error}</p>}
+                        <Button 
+                            onClick={handlePasswordReset}
+                            className="w-full py-2 text-sm sm:text-base"
+                        >
+                            Update Password
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
             <div className="flex flex-col justify-center items-center p-4 sm:p-6 md:p-8 w-full md:w-1/2 relative">
                 <div className="w-full max-w-md space-y-4 sm:space-y-6">
                     <div className="space-y-2 text-center">
@@ -83,6 +174,11 @@ export default function Component() {
                                 : "Sign up and start your job search journey!"}
                         </p>
                     </div>
+                    {error && (
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <span className="block sm:inline">{error}</span>
+                        </div>
+                    )}
                     <form className="space-y-3 sm:space-y-4" onSubmit={(e) => {
                         e.preventDefault()
                         handleLogin()

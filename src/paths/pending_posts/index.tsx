@@ -3,20 +3,13 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Briefcase, MapPin, DollarSign, AlertCircle, TagIcon, Search, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react'
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-  } from "@/components/ui/tooltip";
-import React, { useEffect, useState } from 'react'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { MapPin, AlertCircle, TagIcon, Search, ChevronLeft, ChevronRight, X, Check, HelpCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import * as icons from 'lucide-react'
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
-import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 
 type Job = {
   title: string;
@@ -24,7 +17,7 @@ type Job = {
   location: string;
   description: string;
   payrate: number;
-  tags: string[]; // Ensure tags is always an array
+  tags: string[];
   icon: keyof typeof icons;
   requirements: string;
   questions: string[];
@@ -35,12 +28,12 @@ export default function JobPostings() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [answers, setAnswers] = useState<string[]>([]);
+  const [answers,setAnswers] = useState<string[]>([]);
   const [jobListings, setJobListings] = useState<Job[]>([]);
   const [currentJob, setCurrentJob] = useState<Job | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [appPage, setAppPage] = useState(1);
-  const jobsPerPage = 6;
+  const [error, setError] = useState<string | null>(null);
+  const jobsPerPage = 8;
 
   const fetchJobs = async () => {
     const token = localStorage.getItem('token');
@@ -54,36 +47,79 @@ export default function JobPostings() {
             'Authorization': `Bearer ${token}`,
           },
         });
-        if (!response.ok) {
-          console.error('Response not OK:', response.status, response.statusText);
-          throw new Error('Failed to fetch jobs');
-        }
+
         const data = await response.json();
-        console.log('Received raw job data:', data);
+
+        if (!response.ok) {
+          setError(data.error || 'Failed to fetch jobs');
+          setJobListings([]);
+          return;
+        }
+
+        if (!Array.isArray(data)) {
+          setError('Invalid data format received from server');
+          setJobListings([]);
+          return;
+        }
         
         const formattedJobs: Job[] = data.map((job: any) => ({
           ...job,
-          payrate: parseFloat(job.payrate), // Convert payrate to a number
-          tags: Array.isArray(job.tags) ? job.tags : [], // Default to empty array if not an array
+          payrate: parseFloat(job.payrate),
+          tags: Array.isArray(job.tags) ? job.tags : [],
         }));
         
         console.log('Formatted jobs:', formattedJobs);
         setJobListings(formattedJobs);
+        setError(null);
+        
         if (formattedJobs.length > 0) {
           console.log('Setting current job to:', formattedJobs[0]);
           setCurrentJob(formattedJobs[0]);
         }
       } catch (error) {
         console.error('Error fetching jobs:', error);
+        setError('Failed to fetch jobs. Please try again later.');
+        setJobListings([]);
       }
     } else {
       console.warn('No token found in localStorage');
+      setError('Please log in to view job listings');
     }
   };
 
   useEffect(() => {
-    
+    const fetchUserData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = "/auth";
+        return;
+      }
 
+      try {
+        const response = await fetch('http://localhost:3000/user', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to fetch user data');
+        }
+
+        if (data.type !== 'admin') {
+          window.location.href = "/dash";
+          return;
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        window.location.href = "/dash";
+      }
+    };
+
+    fetchUserData();
     fetchJobs();
   }, []);
 
@@ -108,34 +144,39 @@ export default function JobPostings() {
     );
   };
 
-  const resetTags = () => {
-    setSelectedTags([]);
-  };
 
-  const handleAccept = (boolean: Boolean, accepted_job: Number) => {
-    fetch("http://localhost:3000/accept_post", {
+  const handleAccept = async (boolean: Boolean, accepted_job: Number) => {
+    try {
+      const response = await fetch("http://localhost:3000/accept_post", {
         method: "POST",
         headers: {
-            'Content-Type': 'application/json',
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
+          'Content-Type': 'application/json',
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify({
-            id: accepted_job,
-            accepted: boolean,
-        })}
-    ).then(response => {
-        if (response.status === 200) {
-            fetchJobs();
-        }
-    })
+          id: accepted_job,
+          accepted: boolean,
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update job status');
+      }
+
+      await fetchJobs();
+    } catch (error) {
+      console.error('Error updating job status:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update job status');
+    }
   };
 
   const openDialog = (job: Job) => {
     setCurrentJob(job);
     setAnswers(Array(job.questions.length).fill(''));
+    answers;
     setIsDialogOpen(true);
   };
-
 
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
@@ -143,198 +184,182 @@ export default function JobPostings() {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const Icon = ({ name, ...props }: { name: keyof typeof icons } & React.ComponentProps<'svg'>) => {
-    const IconComponent = icons[name];
-    return IconComponent ? <IconComponent {...props} /> : null;
-  };
+  useEffect(() => {
+    document.title = 'Pending Job Posts | HHS';
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[url('@/assets/bg-white-4.png')] dark:bg-[url('@/assets/bg.png')] bg-no-repeat bg-cover text-zinc-950 dark:text-white">
-      <Nav/>
-      <main className="container mx-auto px-4 py-8">
-        <div className="relative mb-12 text-center mt-24 max-w-lg mx-auto">
-          <div className="bg-[#C7AC59] p-3 rounded-xl shadow-xl">
-            <h1 className="text-5xl font-bold text-white">Available Jobs</h1>
-          </div>
-          <Separator className="w-3/4 mx-auto bg-[#A08339] h-0.5" />
+    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 flex flex-col">
+      <Nav />
+      <main className="container mx-auto px-6 py-24 flex-grow">
+        <div className="max-w-4xl mx-auto mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-zinc-800 dark:text-white text-center mb-4">
+            Pending Job Posts
+          </h1>
+          <p className="text-zinc-600 dark:text-zinc-300 text-center text-lg">
+            Review and manage incoming job postings
+          </p>
         </div>
-        
-        <p className="text-xl text-zinc-700 dark:text-zinc-300 text-center mb-4"><strong>Find your next career opportunity</strong></p> {/* Moved closer to the search bar */}
-        
-        <div className="mb-8 flex items-center space-x-4">
-          <div className="relative flex-grow">
-            <Input 
-              type="text" 
-              placeholder="Search for jobs..." 
-              className="pl-10 pr-4 py-2 w-full rounded-lg border-1.5 border-[#C7AC59] bg-[#F5F5F5] dark:bg-zinc-800 text-black dark:text-white focus:ring-2 focus:ring-[#C7AC59] transition-all duration-300"
-              value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 dark:text-zinc-400" size={20} />
+
+        {error && (
+          <div className="mb-8 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 rounded-lg">
+            <div className="flex items-center">
+              <AlertCircle className="h-5 w-5 mr-2" />
+              {error}
+            </div>
           </div>
+        )}
+
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-1">
+            <Input 
+              type="text"
+              placeholder="Search postings..."
+              className="w-full h-12 pl-12 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 rounded-xl"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+          </div>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="rounded-lg p-2 w-10 h-10 flex items-center justify-center border-1.5 border-[#C7AC59] bg-[#F5F5F5] dark:bg-zinc-800 text-zinc-950 dark:text-white hover:bg-[#C7AC59] hover:text-white transition-all duration-300">
-                <TagIcon className="w-5 h-5" />
+              <Button className="h-12 px-6 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-700 rounded-xl">
+                <TagIcon className="mr-2 h-5 w-5" />
+                <span>Filter Tags</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Select Tags</DropdownMenuLabel>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Job Categories</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {tags.map(tag => (
                 <DropdownMenuCheckboxItem 
                   key={tag}
-                  checked={selectedTags.includes(tag)} 
+                  checked={selectedTags.includes(tag)}
                   onCheckedChange={() => toggleTag(tag)}
                 >
                   {tag}
                 </DropdownMenuCheckboxItem>
               ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={resetTags} className="text-red-500 dark:text-red-400">Reset Tags</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 min-h-[400px]">
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {currentJobs.length > 0 ? (
-            currentJobs.map((job, index) => (
-              <Card key={index} className="border-1.5 border-[#C7AC59] bg-[#F5F5F5] text-black dark:text-white dark:bg-zinc-800 flex flex-col drop-shadow-[0_1px_5px_rgba(0,0,0,0.5)] hover:drop-shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="text-[#341A00] dark:text-white flex items-center space-x-2">
-                    <Icon name={job.icon} className="w-6 h-6 text-[#C7AC59]" />
-                    <span className="font-bold">{job.title}</span>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger onClick={() => openDialog(job)} className="bg-transparent absolute top-4 right-4 w-4 h-4 focus:outline-none hover:outline-none hover:border-none">
-                          <HelpCircle className="w-4 h-4 text-[#C7AC59] hover:text-[#b99f50]" /> 
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Click to view application questions</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </CardTitle>
-                  <div className="flex items-center space-x-2 text-[#5A3000] dark:text-zinc-300">
-                    <MapPin size={16} className="text-[#C7AC59]" />
-                    <span className="font-medium">{job.company}</span>
-                    <span className="text-sm">•</span>
-                    <span>{job.location}</span>
+            currentJobs.map((job) => (
+              <Card key={job.id} className="bg-white dark:bg-zinc-800 border-0 shadow-lg hover:shadow-xl transition-shadow rounded-xl overflow-hidden">
+                <CardHeader className="bg-[#C7AC59] text-white p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-xl font-bold mb-2">{job.title}</CardTitle>
+                      <div className="flex items-center text-zinc-100">
+                        <MapPin className="h-4 w-4 mr-2" />
+                        <span>{job.company} • {job.location}</span>
+                      </div>
+                    </div>
+                    <div className="text-2xl font-bold">${job.payrate}/hr</div>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-grow flex flex-col gap-4">
-                  <p className="text-[#341A00] dark:text-zinc-300 line-clamp-3">{job.description}</p>
+                
+                <CardContent className="p-6">
+                  <p className="text-zinc-600 dark:text-zinc-300 mb-4 line-clamp-2">
+                    {job.description}
+                  </p>
                   
-                  <div className="flex items-center space-x-2 text-[#341A00] dark:text-zinc-300 bg-[#C7AC59] bg-opacity-10 p-2 rounded-lg">
-                    <DollarSign size={16} className="text-[#C7AC59]" />
-                    <span className="font-semibold">${job.payrate}/hr</span>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-semibold flex items-center space-x-2 text-[#341A00] dark:text-[#C7AC59]">
-                      <AlertCircle size={16} className="text-red-500" />
-                      <span>Requirements</span>
-                    </h4>
-                    <p className="text-sm text-[#341A00] dark:text-zinc-300 line-clamp-2">{job.requirements}</p>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {job.tags.map((tag, tagIndex) => (
-                      <span key={tagIndex} className="px-3 py-1 bg-[#C7AC59] bg-opacity-20 text-[#341A00] dark:text-[#C7AC59] text-xs rounded-full font-medium">
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {job.tags.map((tag, i) => (
+                      <span key={i} className="px-3 py-1 bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-200 rounded-full text-sm">
                         {tag}
                       </span>
                     ))}
                   </div>
+
+                  <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                    <h4 className="font-medium text-zinc-800 dark:text-white mb-2">Requirements:</h4>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300">{job.requirements}</p>
+                  </div>
                 </CardContent>
-                <CardFooter className="grid grid-cols-2 gap-3">
-                  <Button onClick={() => handleAccept(true, job.id)} className="bg-green-500 hover:bg-green-600 text-white font-medium transition-colors duration-300">
-                    Accept
+
+                <CardFooter className="p-6 bg-zinc-50 dark:bg-zinc-900 flex gap-4">
+                  <Button 
+                    onClick={() => handleAccept(true, job.id)}
+                    className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
+                  >
+                    <Check className="mr-2 h-4 w-4" /> Accept
                   </Button>
-                  <Button onClick={() => openDialog(job)} className="bg-red-500 hover:bg-red-600 text-white font-medium transition-colors duration-300">
-                    Decline
+                  <Button 
+                    onClick={() => handleAccept(false, job.id)}
+                    className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+                  >
+                    <X className="mr-2 h-4 w-4" /> Decline
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="bg-transparent"
+                    onClick={() => openDialog(job)}
+                  >
+                    <HelpCircle className="h-5 w-5 text-[#C7AC59]" />
                   </Button>
                 </CardFooter>
               </Card>
             ))
           ) : (
-            <div className="col-span-full flex items-center justify-center text-xl text-red-500 font-medium">
-              <AlertCircle className="w-6 h-6 mr-2" />
-              No Jobs Found
+            <div className="col-span-full flex flex-col items-center justify-center p-12 text-zinc-500 dark:text-zinc-400">
+              <AlertCircle className="h-12 w-12 mb-4" />
+              <p className="text-xl font-medium">No pending posts found</p>
             </div>
           )}
         </div>
+
         {filteredJobs.length > jobsPerPage && (
-          <div className="mt-8 flex justify-center items-center space-x-4">
-            <Button 
-              onClick={() => paginate(currentPage - 1)} 
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              onClick={() => paginate(currentPage - 1)}
               disabled={currentPage === 1}
-              variant="outline"
-              className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white w-12 h-12 flex items-center justify-center"
+              className="bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700"
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
-            <span className="text-[#341A00] dark:text-white text-lg">{currentPage} of {Math.ceil(filteredJobs.length / jobsPerPage)}</span>
-            <Button 
-              onClick={() => paginate(currentPage + 1)} 
+            <span className="text-zinc-800 dark:text-white">
+              Page {currentPage} of {Math.ceil(filteredJobs.length / jobsPerPage)}
+            </span>
+            <Button
+              onClick={() => paginate(currentPage + 1)}
               disabled={currentPage === Math.ceil(filteredJobs.length / jobsPerPage)}
-              variant="outline"
-              className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white w-12 h-12 flex items-center justify-center"
+              className="bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700"
             >
-              <ChevronRight className="h-10 w-10" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
         )}
       </main>
-      <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) {
-            setAppPage(1); // Reset appPage to 1 when dialog is closed
-          }
-        }}>
-        <DialogContent className="bg-[#F5F5F5] dark:bg-zinc-800 border-[#C7AC59]">
-          <DialogHeader>
-            <DialogTitle className="text-[#341A00] dark:text-white">{currentJob?.title}</DialogTitle>
-            <DialogDescription className="text-[#5A3000] dark:text-zinc-300">
-              Please answer the following questions:
-            </DialogDescription>
-          </DialogHeader>
-          {Array.isArray(currentJob?.questions) && currentJob?.questions.slice((appPage - 1) * 2, appPage * 2).map((question, qIndex) => (
-            <div key={qIndex} className="mb-4">
-              <label className="block text-sm font-medium mb-1 text-[#341A00] dark:text-white">{question}</label>
-              <Input 
-                value={answers[qIndex] || ''} 
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  const newAnswers = [...answers];
-                  newAnswers[qIndex] = e.target.value;
-                  setAnswers(newAnswers);
-                }} 
-                className="w-full bg-white dark:bg-zinc-700 text-[#341A00] dark:text-white border-[#C7AC59]"
-              />
-            </div>
-          ))}
-          <div className="mt-4 flex justify-between">
-            <Button 
-              onClick={() => setAppPage(appPage - 1)} 
-              disabled={appPage === 1}
-              variant="outline"
-              className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
-            >
-              Previous
-            </Button>
-            <Button 
-              onClick={() => setAppPage(appPage + 1)} 
-              disabled={appPage === Math.ceil((currentJob?.questions.length || 0) / 2) + 1}
-              variant="outline"
-              className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
-            >
-              Next
-            </Button>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white">Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Footer string={"blocky"}/>
+      <Footer string="blocky" />
+
+      {currentJob && (
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Questions for {currentJob.title}</DialogTitle>
+              <DialogDescription>
+                {currentJob.questions.length > 0 ? (
+                  <ul className="list-disc pl-5">
+                    {currentJob.questions.map((question, index) => (
+                      <li key={index} className="mb-2">{question}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No questions available for this job.</p>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setIsDialogOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

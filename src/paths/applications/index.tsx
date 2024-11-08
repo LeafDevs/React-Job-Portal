@@ -12,15 +12,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import Nav from '@/components/ui/nav';
 import Footer from '@/components/ui/footer';
-import { useParams } from 'react-router-dom';
+import { HelpCircle } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -34,8 +39,8 @@ interface Application {
   icon: string;
   requirements: string[];
   status: 'pending' | 'accepted' | 'rejected';
-  questions: any[];
-  jobQuestions: any[];
+  questions: string[];
+  answers: string[];
   createdAt: string;
   jobCreatedAt: string;
   accepted: boolean;
@@ -43,11 +48,17 @@ interface Application {
 }
 
 export default function EmployerApplications() {
-  const { jobId } = useParams();
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [appPage, setAppPage] = useState(1);
+
+  useEffect(() => {
+    document.title = 'Applications | HHS';
+  }, []);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -58,7 +69,7 @@ export default function EmployerApplications() {
       }
 
       try {
-        const response = await fetch(`http://localhost:3000/applications/job?jobId=${jobId}`, {
+        const response = await fetch(`http://localhost:3000/applications/job`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -82,10 +93,8 @@ export default function EmployerApplications() {
       }
     };
 
-    if (jobId) {
-      fetchApplications();
-    }
-  }, [jobId]);
+    fetchApplications();
+  }, []);
 
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
     const token = localStorage.getItem('token');
@@ -131,6 +140,11 @@ export default function EmployerApplications() {
     }
   };
 
+  const showAnswers = (application: Application) => {
+    setSelectedApplication(application);
+    setIsDialogOpen(true);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <Nav />
@@ -138,17 +152,19 @@ export default function EmployerApplications() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Applications for {applications[0]?.jobTitle || 'Job'}</CardTitle>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Applications</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="accepted">Accepted</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="w-[180px] border border-gray-300 rounded-md p-2 bg-[#C7AC59] text-white shadow-lg hover:bg-[#C7AC59]/80 transition-all duration-300">
+                  {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Applications
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onSelect={() => setStatusFilter('all')}>All Applications</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setStatusFilter('pending')}>Pending</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setStatusFilter('accepted')}>Accepted</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setStatusFilter('rejected')}>Rejected</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -188,7 +204,7 @@ export default function EmployerApplications() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 items-center">
                           {application.status === 'pending' && (
                             <>
                               <Button 
@@ -197,7 +213,9 @@ export default function EmployerApplications() {
                                 className="border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
                                 onClick={() => updateApplicationStatus(application.id, 'accepted')}
                               >
-                                Accept
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12"/>
+                                </svg>
                               </Button>
                               <Button 
                                 size="sm" 
@@ -205,10 +223,21 @@ export default function EmployerApplications() {
                                 className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                                 onClick={() => updateApplicationStatus(application.id, 'rejected')}
                               >
-                                Reject
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <line x1="18" y1="6" x2="6" y2="18"/>
+                                  <line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
                               </Button>
                             </>
                           )}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="bg-transparent"
+                            onClick={() => showAnswers(application)}
+                          >
+                            <HelpCircle className="h-5 w-5 text-[#C7AC59]" />
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -219,6 +248,47 @@ export default function EmployerApplications() {
           </CardContent>
         </Card>
       </div>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold">Application Responses</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {selectedApplication?.questions
+              .slice((appPage - 1) * 2, appPage * 2)
+              .map((question, index) => (
+                <div key={index} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <p className="font-semibold text-gray-800 dark:text-gray-200 mb-3">
+                    Question {(appPage - 1) * 2 + index + 1}:
+                    <span className="font-normal ml-2">{question}</span>
+                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-primary">
+                    {selectedApplication.answers[(appPage - 1) * 2 + index] || 'No response provided'}
+                  </p>
+                </div>
+            ))}
+          </div>
+          <div className="flex justify-between items-center mt-4 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setAppPage(p => Math.max(1, p - 1))}
+              disabled={appPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-500">
+              Page {appPage} of {Math.ceil((selectedApplication?.questions.length || 0) / 2)}
+            </span>
+            <Button
+              variant="outline" 
+              onClick={() => setAppPage(p => p + 1)}
+              disabled={!selectedApplication || appPage >= Math.ceil(selectedApplication.questions.length / 2)}
+            >
+              Next
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <Footer string={'blocky'} />
     </div>
   );

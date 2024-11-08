@@ -87,13 +87,14 @@ export default function Nav() {
                 { name: localStorage.getItem('token') ? 'Dashboard' : 'Login', icon: <AuthIcon className="h-6 w-6" />, path: localStorage.getItem('token') ? "/dash" : "/auth" }
               ].map((item) => (
                 <li key={item.name}>
-                  <Link
-                    to={item.path}
+                  <a
+                    href="#"
+                    onClick={() => window.location.href = item.path}
                     className="flex flex-col items-center px-3 py-2 rounded-md text-sm font-medium text-white dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
                   >
                     {item.icon}
                     <span className="mt-1 text-xs">{item.name}</span>
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>

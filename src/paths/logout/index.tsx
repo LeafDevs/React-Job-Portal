@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 const Logout = () => {
     localStorage.removeItem("token");
     window.location.href = '/auth';
