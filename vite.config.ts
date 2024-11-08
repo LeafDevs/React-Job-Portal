@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import webpConverter from './webp-converter';
+import webpConverter from './plugins/webp-converter';
+import obfuscator from './plugins/obfuscator';
 
 export default defineConfig({
   plugins: [
@@ -17,11 +18,24 @@ export default defineConfig({
       ],
       preserveOriginal: true
     }),
+    obfuscator({
+      exclude: [
+        'vendor',
+        'polyfills',
+        'manifest',
+      ],
+      options: {
+        // Override default options if needed
+        stringArrayEncoding: ['base64'],
+        debugProtection: true,
+        selfDefending: true
+      }
+    }),
   ],
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    sourcemap: true,
+    sourcemap: false,
     commonjsOptions: {
       include: [/\.tsx?$/, /\.jsx?$/],
     },

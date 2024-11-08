@@ -1,3 +1,4 @@
+// Import necessary React hooks and UI components
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,12 +23,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Dashboard() {
+  // State variables for user data and UI controls
   const [userName, setUserName] = useState("John Doe");
   const [userRole, setUserRole] = useState("Student");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [profileImage, setProfileImage] = useState("https://github.com/leafdevs.png");
+  const [profileImage, setProfileImage] = useState("https://github.com/leafdevs.png"); // Default profile picture
   const [imagePreview, setImagePreview] = useState("");
-  const [quickLinks, setQuickLinks] = useState<any[]>([]); // Fix type error
+  const [quickLinks, setQuickLinks] = useState<any[]>([]); // Array to store quick access links
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +37,9 @@ export default function Dashboard() {
   const [bannerPreview, setBannerPreview] = useState("");
   const [isPostingDialogOpen, setIsPostingDialogOpen] = useState(false);
   const [questions, setQuestions] = useState<string[]>([]);
+  const [showEmployerInfo, setShowEmployerInfo] = useState(false);
+  
+  // State for job posting form data
   const [postingData, setPostingData] = useState({
     title: '',
     payrate: '',
@@ -44,6 +49,7 @@ export default function Dashboard() {
     tags: [] as string[],
   });
 
+  // Effect to handle authentication token from URL
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
     const token = queryParams.get('token');
@@ -54,10 +60,12 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Effect to set page title
   useEffect(() => {
     document.title = 'Dashboard | HHS';
   }, []);
 
+  // Effect to fetch user data from API
   useEffect(() => {
     const fetchData = async () => {
       setError(null);
@@ -72,6 +80,7 @@ export default function Dashboard() {
       }
 
       try {
+        // Fetch user data from API
         const response = await fetch('http://localhost:3000/user', {
           method: 'GET',
           headers: {
@@ -92,12 +101,14 @@ export default function Dashboard() {
           throw new Error(data.error || 'Failed to fetch user data');
         }
 
+        // Handle unauthorized access
         if (data.code === 401) {
           localStorage.removeItem('token');
           window.location.href = "/auth";
           return;
         }
 
+        // Update user interface with fetched data
         console.log(data);
         setUserName(data.name);
         setUserRole(data.type.charAt(0).toUpperCase() + data.type.slice(1));
@@ -111,6 +122,7 @@ export default function Dashboard() {
         }
         console.log(userBackground);
 
+        // Set up quick links based on user type
         const language = localStorage.getItem("language") || "en";
         const links = data.type === 'student' ? [
           { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
@@ -134,7 +146,7 @@ export default function Dashboard() {
           { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings"},
         ];
 
-        // Remove duplicates from quickLinks
+        // Remove duplicate quick links
         const uniqueLinks = Array.from(new Set(links.map(link => link.label)))
           .map(label => links.find(link => link.label === label));
         
@@ -150,6 +162,7 @@ export default function Dashboard() {
     fetchData();
   }, [profileImage]);
 
+  // Function to update profile picture
   const updateProfilePicture = async (base64Image: string) => {
     const token = localStorage.getItem('token');
     const imageData = base64Image.split(',')[1];
@@ -188,6 +201,7 @@ export default function Dashboard() {
     }
   }
 
+  // Function to update banner image
   const updateBanner = async (base64Image: string) => {
     const token = localStorage.getItem('token');
     const imageData = base64Image.split(',')[1];
@@ -226,6 +240,7 @@ export default function Dashboard() {
     }
   }
 
+  // Handler for profile image file selection
   const handleImageChange = (e: { target: { files: FileList | null; }; }) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -241,6 +256,7 @@ export default function Dashboard() {
     }
   };
 
+  // Handler for banner image file selection
   const handleBannerChange = (e: { target: { files: FileList | null; }; }) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -256,6 +272,7 @@ export default function Dashboard() {
     }
   };
 
+  // Function to handle job posting creation
   const handleCreatePosting = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -278,6 +295,7 @@ export default function Dashboard() {
 
       if (!response.ok) throw new Error('Failed to create posting');
       
+      // Reset form after successful submission
       setIsPostingDialogOpen(false);
       setQuestions([]);
       setPostingData({
@@ -294,6 +312,7 @@ export default function Dashboard() {
     }
   };
 
+  // Render the dashboard UI
   return (
     <div className="flex flex-col bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800  min-h-screen">
       <Nav />
@@ -346,6 +365,7 @@ export default function Dashboard() {
 
         <Separator className="my-8" />
 
+        {/* Profile Edit Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="bg-[#F5F5F5] dark:bg-zinc-800 border-[#C7AC59]">
             <DialogHeader>
@@ -396,26 +416,48 @@ export default function Dashboard() {
                 </Avatar>
               </div>
             </div>
-            <DialogFooter className="flex justify-start">
-              <Button variant="outline" className="mr-2">Become an Employer</Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  if (imagePreview) {
-                    updateProfilePicture(imagePreview);
-                  }
-                  if (bannerPreview) {
-                    updateBanner(bannerPreview);
-                  }
-                }}
-                className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
-              >
-                Update
-              </Button>
+            <DialogFooter className="flex flex-col w-full">
+              <div className="flex justify-start">
+                <Button 
+                  variant="outline" 
+                  className="mr-2"
+                  onClick={() => setShowEmployerInfo(!showEmployerInfo)}
+                >
+                  Become an Employer
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    if (imagePreview) {
+                      updateProfilePicture(imagePreview);
+                    }
+                    if (bannerPreview) {
+                      updateBanner(bannerPreview);
+                    }
+                  }}
+                  className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
+                >
+                  Update
+                </Button>
+              </div>
+              {showEmployerInfo && (
+                <div className="mt-4 p-4 bg-zinc-100 dark:bg-zinc-700 rounded-lg">
+                  <p className="text-sm text-zinc-700 dark:text-zinc-200">
+                    To become an employer, please send an email to{' '}
+                    <a 
+                      href="mailto:jobs@goldenrams.com"
+                      className="text-[#C7AC59] hover:underline"
+                    >
+                      jobs@goldenrams.com
+                    </a>
+                  </p>
+                </div>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
+        {/* Job Posting Dialog */}
         <Dialog open={isPostingDialogOpen} onOpenChange={setIsPostingDialogOpen}>
           <DialogContent className="bg-white dark:bg-zinc-900 border-[#C7AC59] dark:border-[#C7AC59]/50">
             <DialogHeader>
@@ -577,7 +619,9 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
 
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Announcements Card */}
           <Card className="col-span-2">
             <CardHeader>
               <CardTitle>Recent Announcements</CardTitle>
@@ -601,6 +645,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
+          {/* Quick Links Card */}
           <Card>
             <CardHeader>
               <CardTitle>Quick Links</CardTitle>
@@ -637,6 +682,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
+        {/* Featured Programs Section */}
         <h2 className="text-2xl font-bold mt-12 mb-6 text-zinc-950 dark:text-white">Featured Programs</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[

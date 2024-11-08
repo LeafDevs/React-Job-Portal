@@ -1,3 +1,4 @@
+// Import necessary UI components and hooks
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,24 +19,29 @@ import {
 import graphic from "@/assets/ram.avif"
 
 export default function Component() {
-    const [isLogin, setIsLogin] = useState(true)
+    // State management for form fields and UI controls
+    const [isLogin, setIsLogin] = useState(true) // Toggle between login and register views
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [email, setEmail] = useState('')
     const [name, setName] = useState('')
-    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === "dark")
+    const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === "dark") // Persist dark mode preference
     const [showPasswordReset, setShowPasswordReset] = useState(false)
     const [newPassword, setNewPassword] = useState('')
     const [confirmNewPassword, setConfirmNewPassword] = useState('')
     const [error, setError] = useState('')
 
+    // Handle Google OAuth authentication
     const handleGoogleAuth = () => {
         window.location.href = 'http://localhost:3000/auth/google'
     }
+
+    // Set page title on component mount
     useEffect(() => {
         document.title = 'Login | HHS';
-      }, []);
+    }, []);
 
+    // Handle password reset functionality
     const handlePasswordReset = async () => {
         if (newPassword !== confirmNewPassword) {
             setError('New passwords do not match');
@@ -63,9 +69,11 @@ export default function Component() {
         }
     }
 
+    // Handle login/register form submission
     const handleLogin = async () => {
         setError(''); // Clear any previous errors
 
+        // Show password reset dialog if password is 'password'
         if (password.toLowerCase() === 'password') {
             setShowPasswordReset(true);
             return;
@@ -84,6 +92,8 @@ export default function Component() {
                 throw new Error(data.error || 'Authentication failed');
             }
 
+            console.log(response);
+
             if (response.redirected) {
                 window.location.href = response.url;
                 return;
@@ -91,7 +101,10 @@ export default function Component() {
 
             const data = await response.json();
             if (data.code === 200) {
-                window.location.href = 'http://localhost:5173/dash?token=' + encodeURIComponent(data.token);
+                if (!isLogin && data.message === "Registration Successful") {
+                    localStorage.setItem('token', data.token);
+                }
+                window.location.href = 'http://localhost:5173/dash'
             } else {
                 setError(data.error || 'Login failed');
             }
@@ -105,6 +118,7 @@ export default function Component() {
         }
     }
 
+    // Password validation requirements
     const passwordRequirements = [
         { text: "8 characters minimum", valid: password.length >= 8 },
         { text: "One lowercase character", valid: /[a-z]/.test(password) },
@@ -112,6 +126,7 @@ export default function Component() {
         { text: "One number or special character", valid: /[0-9!@#$%^&*]/.test(password) },
     ]
 
+    // Handle dark mode toggle and persistence
     useEffect(() => {
         if (isDarkMode) {
           document.documentElement.classList.add('dark')
@@ -120,10 +135,12 @@ export default function Component() {
           document.documentElement.classList.remove('dark')
           localStorage.setItem('theme', 'light')
         }
-      }, [isDarkMode])
+    }, [isDarkMode])
 
     return (
+        // Main container with responsive layout
         <div className="flex min-h-screen bg-white dark:bg-zinc-900 relative">
+            {/* Password Reset Dialog */}
             <Dialog open={showPasswordReset} onOpenChange={setShowPasswordReset}>
                 <DialogContent className="w-[90vw] max-w-md mx-auto p-4 sm:p-6 rounded-lg">
                     <DialogHeader className="mb-4">
@@ -162,8 +179,11 @@ export default function Component() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            {/* Left side - Login/Register Form */}
             <div className="flex flex-col justify-center items-center p-4 sm:p-6 md:p-8 w-full md:w-1/2 relative">
                 <div className="w-full max-w-md space-y-4 sm:space-y-6">
+                    {/* Header Section */}
                     <div className="space-y-2 text-center">
                         <h1 className="text-2xl sm:text-3xl font-bold tracking-tighter md:text-4xl text-black dark:text-white">
                             {isLogin ? "Welcome Back!" : "Start Your Success Story"}
@@ -174,25 +194,34 @@ export default function Component() {
                                 : "Sign up and start your job search journey!"}
                         </p>
                     </div>
+
+                    {/* Error Display */}
                     {error && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
                             <span className="block sm:inline">{error}</span>
                         </div>
                     )}
+
+                    {/* Login/Register Form */}
                     <form className="space-y-3 sm:space-y-4" onSubmit={(e) => {
                         e.preventDefault()
                         handleLogin()
                     }}>
+                        {/* Name field - only shown on register */}
                         {!isLogin && (
                             <div className="space-y-1 sm:space-y-2">
                                 <Label htmlFor="full-name" className="text-sm text-black dark:text-white">Full name</Label>
                                 <Input id="full-name" placeholder="Jane Doe" required onChange={(e) => setName(e.target.value)} className="text-sm bg-white dark:bg-zinc-800 text-black dark:text-white" />
                             </div>
                         )}
+
+                        {/* Email field */}
                         <div className="space-y-1 sm:space-y-2">
                             <Label htmlFor="email" className="text-sm text-black dark:text-white">Email</Label>
                             <Input id="email" placeholder="janedoe@example.com" required type="email" onChange={(e) => setEmail(e.target.value)} className="text-sm bg-white dark:bg-zinc-800 text-black dark:text-white" />
                         </div>
+
+                        {/* Password field with requirements checker */}
                         <div className="space-y-1 sm:space-y-2">
                             <Label htmlFor="password" className="text-sm text-black dark:text-white">Password</Label>
                             <Input id="password" placeholder="Enter your password" required type="password" onChange={(e) => setPassword(e.target.value)} className="text-sm bg-white dark:bg-zinc-800 text-black dark:text-white" />
@@ -210,6 +239,8 @@ export default function Component() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Confirm Password field - only shown on register */}
                         {!isLogin && (
                             <div className="space-y-1 sm:space-y-2">
                                 <Label htmlFor="confirm-password" className="text-sm text-black dark:text-white">Confirm Password</Label>
@@ -217,15 +248,21 @@ export default function Component() {
                                 {password !== confirmPassword && <p className="text-red-500 text-xs sm:text-sm mt-1">Passwords do not match</p>}
                             </div>
                         )}
+
+                        {/* Toggle between Login/Register */}
                         <div className="text-center">
                             <span className="text-xs sm:text-sm cursor-pointer text-black dark:text-white hover:text-[#C7AC59] dark:hover:text-[#C7AC59]" onClick={() => setIsLogin(!isLogin)}>
                                 {isLogin ? "Don't have an account? Register Here!" : "Already have an account? Login here!"}
                             </span>
                         </div>
+
+                        {/* Submit Button */}
                         <Button className="w-full bg-[#C7AC59] text-black hover:bg-[#341A00] hover:text-white text-sm sm:text-base relative overflow-hidden group" type="submit">
                             <div className="absolute inset-0 bg-[url('@/assets/texture.jpg')] opacity-15 mix-blend-overlay bg-[length:200%] group-hover:animate-[backgroundSlide_30s_linear_infinite]" style={{backgroundPosition: '0 0'}}></div>
                             {isLogin ? "Login" : "Sign up"}
                         </Button>
+
+                        {/* Google OAuth Button */}
                         <div className="flex justify-center">
                             <TooltipProvider>
                                 <Tooltip>
@@ -248,6 +285,8 @@ export default function Component() {
                         </div>
                     </form>
                 </div>
+
+                {/* Dark Mode Toggle Button */}
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
                   className="absolute bottom-4 left-4 bg-white dark:bg-zinc-800 p-2 rounded-full text-[#341A00] dark:text-white hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300"
@@ -255,6 +294,8 @@ export default function Component() {
                   {isDarkMode ? <icons.Sun className="h-5 w-5" /> : <icons.Moon className="h-5 w-5" />}
                 </button>
             </div>
+
+            {/* Right side - Background Image */}
             <div className="hidden md:block md:w-1/2 flex justify-center items-center" style={{ backgroundImage: `url(${graphic})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
             </div>
         </div>

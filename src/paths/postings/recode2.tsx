@@ -1,5 +1,6 @@
 'use client'
 
+// Import UI components from local component library
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,6 +12,7 @@ import * as icons from 'lucide-react'
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
 
+// Define TypeScript interface for Job data structure
 type Job = {
   title: string;
   company: string;
@@ -25,6 +27,7 @@ type Job = {
 };
 
 export default function JobPostings() {
+  // State management for search, filtering, pagination and job data
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -33,22 +36,26 @@ export default function JobPostings() {
   const [currentJob, setCurrentJob] = useState<Job | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [appPage, setAppPage] = useState(1);
-  const jobsPerPage = 8;
+  const jobsPerPage = 8; // Number of jobs to display per page
 
+  // Set page title on component mount
   useEffect(() => {
     document.title = 'Available Jobs| HHS';
   }, []);
 
+  // Validate user authentication on component mount
   useEffect(() => {
     const validateToken = async () => {
       const token = localStorage.getItem('token');
       
+      // Redirect to auth page if no token exists
       if (!token) {
         window.location.href = '/auth';
         return;
       }
 
       try {
+        // Verify token validity with API
         const response = await fetch('http://localhost:3000/user', {
           method: 'GET',
           headers: {
@@ -56,12 +63,14 @@ export default function JobPostings() {
           }
         });
 
+        // Handle invalid token
         if (!response.ok) {
           localStorage.removeItem('token');
           window.location.href = '/auth';
           return;
         }
 
+        // Fetch jobs if token is valid
         fetchJobs();
       } catch (error) {
         console.error('Error validating token:', error);
@@ -73,6 +82,7 @@ export default function JobPostings() {
     validateToken();
   }, []);
 
+  // Fetch job listings from API
   const fetchJobs = async () => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -90,6 +100,7 @@ export default function JobPostings() {
         const data = await response.json();
         console.log('Received raw job data:', data);
         
+        // Format job data and ensure proper data types
         const formattedJobs: Job[] = data.map((job: any) => ({
           ...job,
           payrate: parseFloat(job.payrate),
@@ -111,6 +122,7 @@ export default function JobPostings() {
     }
   };
 
+  // Filter jobs based on search term and selected tags
   const filteredJobs = jobListings.filter(job => 
     (job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,14 +131,17 @@ export default function JobPostings() {
     (selectedTags.length === 0 || selectedTags.some(tag => job.tags.includes(tag)))
   );
 
+  // Available job tags for filtering
   const tags = ["Office", "Retail", "Customer Service", "Food Service", "Teamwork", "Warehouse", "Logistics", "Sales", "Part Time", "Full Time"]
 
+  // Toggle tag selection for filtering
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
 
+  // Handle job application submission
   const handleSubmit = async () => {
     if (!currentJob) return;
     
@@ -150,6 +165,7 @@ export default function JobPostings() {
         throw new Error('Failed to submit application');
       }
 
+      // Reset application state after successful submission
       setIsDialogOpen(false);
       setAnswers([]);
       setAppPage(1);
@@ -158,18 +174,22 @@ export default function JobPostings() {
     }
   };
 
+  // Open application dialog and initialize answers array
   const openDialog = (job: Job) => {
     setCurrentJob(job);
     setAnswers(Array(job.questions.length).fill(''));
     setIsDialogOpen(true);
   };
 
+  // Pagination calculations
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
 
+  // Update current page number
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  // Render component UI
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 flex flex-col">
       <Nav />
@@ -183,6 +203,7 @@ export default function JobPostings() {
           </p>
         </div>
 
+        {/* Search and filter section */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Input 
@@ -218,6 +239,7 @@ export default function JobPostings() {
           </DropdownMenu>
         </div>
 
+        {/* Job listings grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {currentJobs.length > 0 ? (
             currentJobs.map((job) => (
@@ -272,6 +294,7 @@ export default function JobPostings() {
           )}
         </div>
 
+        {/* Pagination controls */}
         {filteredJobs.length > jobsPerPage && (
           <div className="flex justify-center items-center gap-4 mt-8">
             <Button
@@ -294,6 +317,7 @@ export default function JobPostings() {
           </div>
         )}
 
+        {/* Job application dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="bg-white dark:bg-zinc-800">
             <DialogHeader>

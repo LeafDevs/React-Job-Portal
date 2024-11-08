@@ -1,3 +1,4 @@
+// Import necessary dependencies
 import { useState, useEffect } from 'react'
 import { Sun, Moon, ChevronLeft, Home as HomeIcon, Briefcase as JobIcon, LogIn as AuthIcon, Globe } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -13,11 +14,13 @@ import { Link } from 'react-router-dom'
 import t from '@/lib/translate'
 
 export default function Nav() {
+  // Initialize state variables
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === "dark")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en')
   const [languages, setTranslations] = useState({});
 
+  // Load translations for all supported languages on component mount
   useEffect(() => {
     const loadTranslations = async () => {
       const translations = {
@@ -48,6 +51,7 @@ export default function Nav() {
     loadTranslations();
   }, []);
 
+  // Update theme in localStorage and DOM when dark mode changes
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark')
@@ -58,19 +62,23 @@ export default function Nav() {
     }
   }, [isDarkMode])
 
+  // Update language preference in localStorage when language changes
   useEffect(() => {
     localStorage.setItem('language', language)
   }, [language])
 
+  // Handle language change and reload page to apply translations
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage)
     window.location.reload();
   }
 
   return (
+    // Main navigation header with dark glass effect
     <header className="bg-[rgba(0,0,0,0.4)] backdrop-blur-md fixed w-full z-50 transition-colors duration-300 shadow-lg drop-shadow-[0_5px_12px_rgba(0,0,0,0.4)]">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
+          {/* Logo and site title */}
           <div className="flex items-center cursor-pointer" onClick={() => window.location.href = '/'}>
             <img
               src="https://www.goldenrams.com/cms/lib/PA01000390/Centricity/Template/GlobalAssets/images///Logos/H-Gold-2.png"
@@ -79,6 +87,7 @@ export default function Nav() {
             />
             <span className="text-lg md:text-xl font-semibold text-white dark:text-[#C7AC59]" data-notranslate>Highlands SD</span>
           </div>
+          {/* Desktop navigation menu */}
           <nav className="hidden md:block">
             <ul className="flex space-x-4">
               {[
@@ -99,19 +108,23 @@ export default function Nav() {
               ))}
             </ul>
           </nav>
+          {/* Right side controls (mobile menu, theme toggle, language selector) */}
           <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Mobile menu toggle button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden bg-transparent inline-flex items-center justify-center p-2 rounded-md text-white dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300"
             >
               <ChevronLeft className={`h-6 w-6 ${isMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
             </button>
+            {/* Theme toggle button */}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               className="bg-white dark:bg-white p-2 rounded-full text-[#341A00] dark:text-[#341A00] hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300"
             >
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
+            {/* Language selector dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger className="rounded-lg bg-[#C7AC59] hover:bg-[#341A00] cursor-pointer p-2">
                 <Globe className="h-5 w-5 text-white" />
@@ -129,6 +142,7 @@ export default function Nav() {
           </div>
         </div>
       </div>
+      {/* Mobile navigation menu with animation */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div

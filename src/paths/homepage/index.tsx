@@ -1,9 +1,12 @@
+// Import necessary dependencies from React and UI components
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, GraduationCap, Library, Users } from "lucide-react"
 import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
+
+// Import background images and textures
 import bgImage from '@/assets/AdobeStock_303970286.jpeg'
 import bgImage2 from '@/assets/AdobeStock_208777709.jpeg'
 import bgImage3 from '@/assets/AdobeStock_235889550.jpeg'
@@ -14,6 +17,7 @@ import texture from '@/assets/girth.jpg'
 import text from '@/lib/translate'
 
 export default function HomePage() {
+  // Arrays to store image URLs and their corresponding alt texts
   const imageUrls = [bgImage, bgImage2, bgImage3, bgImage6, bgImage5, bgImage4];
   const imageAltTexts = [
     'A person handing you a coffee showcasing the possibility of getting a job as a barista',
@@ -24,10 +28,12 @@ export default function HomePage() {
     'An image of employers talking showcasing them submitting a posting.'
   ];
 
+  // Set page title on component mount
   useEffect(() => {
     document.title = 'Highlands Career Center | HHS';
   }, []);
   
+  // Initial state for image carousel data
   const [imageData, setImageData] = useState([
     {
       title: 'Discover Your Path',
@@ -55,6 +61,7 @@ export default function HomePage() {
     }
   ]);
 
+  // Effect to handle text translation based on selected language
   useEffect(() => {
     const translateData = async () => {
       const language = localStorage.getItem('language') || 'en';
@@ -70,9 +77,11 @@ export default function HomePage() {
     translateData();
   }, []);
 
+  // State for tracking current image and data indices in carousel
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentDataIndex, setCurrentDataIndex] = useState(0);
 
+  // Effect to handle automatic carousel rotation
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageUrls.length);
@@ -82,10 +91,12 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Main component render
   return (
     <div className="flex flex-col min-h-screen bg-[rgba(39,39,42,.5)] text-white dark:bg-zinc-950 dark:text-[#341A00]">
       <Nav />
       <main className="flex-grow">
+        {/* Hero section with image carousel */}
         <section className="relative h-[50vh] md:h-[70vh] overflow-hidden">
           {imageUrls.map((imageUrl, index) => (
             <div
@@ -98,7 +109,7 @@ export default function HomePage() {
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
-              aria-label={imageAltTexts[index]} // Added alt text for accessibility
+              aria-label={imageAltTexts[index]}
             />
           ))}
           <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center p-4 md:p-24">
@@ -130,6 +141,7 @@ export default function HomePage() {
               >
                 {imageData[currentDataIndex].buttonText}
               </Button>
+              {/* Carousel navigation dots */}
               <div className={`flex mt-4 md:mt-8 space-x-4 relative z-50`}>
                 {[0, 1, 2].map((index) => (
                   <button
@@ -150,6 +162,7 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+        {/* Decorative divider with texture */}
         <div className="relative">
           <svg className="absolute top-0 left-0 w-full h-1/4 z-10" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1366 192" style={{ top: '0', transform: 'translateY(-50%)' }}>
             <defs>
@@ -161,8 +174,10 @@ export default function HomePage() {
             <path d="M1365.47,142.315C666.01,76.815.53,142.315.53,142.315l-.07-76.42s669.52-68.04,1365.09,0l-.08,76.42Z" fill="url(#dividerPattern)" fillOpacity="0.5" stroke="none"/>
           </svg>
           <div className="py-8 md:py-16 relative">
+            {/* Background pattern */}
             <div className="absolute top-0 left-0 w-full h-full bg-[url('@/assets/bg-white-4.png')] bg-repeat-y bg-cover bg-center dark:bg-[url('@/assets/bg.png')] backdrop-filter backdrop-blur-[20px] border-t-25 border-b-25 border-stone-400 rounded-t-25 rounded-b-25"></div>
             <div className="relative">
+              {/* Announcements section */}
               <section className="mb-8 md:mb-16">
                 <div className="container mx-auto px-4">
                   <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center text-zinc-950 dark:text-white">Announcements</h2>
@@ -197,6 +212,7 @@ export default function HomePage() {
                   </div>
                 </section>
 
+                {/* Featured Programs section */}
                 <section className="mb-8 md:mb-16">
                   <div className="container mx-auto px-4">
                     <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center text-zinc-950 dark:text-white">Featured Programs</h2>
@@ -224,6 +240,7 @@ export default function HomePage() {
                   </div>
                 </section>
 
+                {/* Upcoming Events section */}
                 <section className="mb-8 md:mb-16">
                   <div className="container mx-auto px-4">
                     <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center text-zinc-950 dark:text-white">Upcoming Events</h2>

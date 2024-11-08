@@ -1,5 +1,6 @@
 'use client'
 
+// Import UI components and icons
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,6 +12,7 @@ import Nav from "@/components/ui/nav"
 import Footer from "@/components/ui/footer"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 
+// Define Job type interface
 type Job = {
   title: string;
   company: string;
@@ -25,6 +27,7 @@ type Job = {
 };
 
 export default function JobPostings() {
+  // State management for search, filtering, and pagination
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -35,6 +38,7 @@ export default function JobPostings() {
   const [error, setError] = useState<string | null>(null);
   const jobsPerPage = 8;
 
+  // Fetch job listings from the API
   const fetchJobs = async () => {
     const token = localStorage.getItem('token');
     console.log('Fetching jobs with token:', token);
@@ -50,18 +54,21 @@ export default function JobPostings() {
 
         const data = await response.json();
 
+        // Handle error responses
         if (!response.ok) {
           setError(data.error || 'Failed to fetch jobs');
           setJobListings([]);
           return;
         }
 
+        // Validate data format
         if (!Array.isArray(data)) {
           setError('Invalid data format received from server');
           setJobListings([]);
           return;
         }
         
+        // Format job data and update state
         const formattedJobs: Job[] = data.map((job: any) => ({
           ...job,
           payrate: parseFloat(job.payrate),
@@ -87,6 +94,7 @@ export default function JobPostings() {
     }
   };
 
+  // Check user authentication and admin status on component mount
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem('token');
@@ -109,6 +117,7 @@ export default function JobPostings() {
           throw new Error(data.error || 'Failed to fetch user data');
         }
 
+        // Redirect non-admin users
         if (data.type !== 'admin') {
           window.location.href = "/dash";
           return;
@@ -123,6 +132,7 @@ export default function JobPostings() {
     fetchJobs();
   }, []);
 
+  // Filter jobs based on search term and selected tags
   const filteredJobs = jobListings.filter(job => 
     (job.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
     job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -131,20 +141,23 @@ export default function JobPostings() {
     (selectedTags.length === 0 || selectedTags.some(tag => job.tags.includes(tag)))
   );
 
+  // Debug logging for job listings
   jobListings.forEach(job => {
     console.log(`Job Title: ${job.title}, Tags: ${job.tags.join(', ')}`);
     console.log(job)
   });
 
+  // Available job tags for filtering
   const tags = ["Office", "Retail", "Customer Service", "Food Service", "Teamwork", "Warehouse", "Logistics", "Sales", "Part Time", "Full Time"]
 
+  // Toggle tag selection for filtering
   const toggleTag = (tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
 
-
+  // Handle accepting or declining job posts
   const handleAccept = async (boolean: Boolean, accepted_job: Number) => {
     try {
       const response = await fetch("http://localhost:3000/accept_post", {
@@ -171,6 +184,7 @@ export default function JobPostings() {
     }
   };
 
+  // Open dialog to view job questions
   const openDialog = (job: Job) => {
     setCurrentJob(job);
     setAnswers(Array(job.questions.length).fill(''));
@@ -178,16 +192,19 @@ export default function JobPostings() {
     setIsDialogOpen(true);
   };
 
+  // Pagination logic
   const indexOfLastJob = currentPage * jobsPerPage;
   const indexOfFirstJob = indexOfLastJob - jobsPerPage;
   const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  // Set page title
   useEffect(() => {
     document.title = 'Pending Job Posts | HHS';
   }, []);
 
+  // Render component UI
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 flex flex-col">
       <Nav />
@@ -201,6 +218,7 @@ export default function JobPostings() {
           </p>
         </div>
 
+        {/* Error message display */}
         {error && (
           <div className="mb-8 p-4 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-100 rounded-lg">
             <div className="flex items-center">
@@ -210,6 +228,7 @@ export default function JobPostings() {
           </div>
         )}
 
+        {/* Search and filter controls */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Input 
@@ -222,6 +241,7 @@ export default function JobPostings() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
           </div>
           
+          {/* Tag filter dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="h-12 px-6 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-700 rounded-xl">
@@ -245,6 +265,7 @@ export default function JobPostings() {
           </DropdownMenu>
         </div>
 
+        {/* Job listings grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {currentJobs.length > 0 ? (
             currentJobs.map((job) => (
@@ -313,6 +334,7 @@ export default function JobPostings() {
           )}
         </div>
 
+        {/* Pagination controls */}
         {filteredJobs.length > jobsPerPage && (
           <div className="flex justify-center items-center gap-4 mt-8">
             <Button
@@ -337,6 +359,7 @@ export default function JobPostings() {
       </main>
       <Footer string="blocky" />
 
+      {/* Job questions dialog */}
       {currentJob && (
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent>

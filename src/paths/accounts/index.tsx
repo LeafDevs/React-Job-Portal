@@ -1,3 +1,4 @@
+// Import necessary dependencies and UI components
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { MoreHorizontal, UserCheck, Trash, Search } from 'lucide-react';
 
+// Define the Account interface for type checking
 interface Account {
   id: string;
   name: string;
@@ -38,24 +40,28 @@ interface Account {
 }
 
 export default function AdminAccounts() {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showResetDialog, setShowResetDialog] = useState(false);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  // State management for accounts and UI controls
+  const [accounts, setAccounts] = useState<Account[]>([]); // All accounts
+  const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]); // Filtered accounts based on search
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [error, setError] = useState<string | null>(null); // Error messages
+  const [searchQuery, setSearchQuery] = useState(''); // Search input value
+  const [showResetDialog, setShowResetDialog] = useState(false); // Password reset dialog visibility
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null); // Selected account for actions
 
+  // Set page title and fetch accounts on component mount
   useEffect(() => {
     document.title = 'Accounts Management | HHS';
     fetchAccounts();
     isLoading;  
   }, []);
 
+  // Filter accounts when search query or accounts list changes
   useEffect(() => {
     filterAccounts();
   }, [searchQuery, accounts]);
 
+  // Filter accounts based on search query
   const filterAccounts = () => {
     const filtered = accounts.filter(account => 
       account.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -65,6 +71,7 @@ export default function AdminAccounts() {
     setFilteredAccounts(filtered);
   };
 
+  // Fetch accounts from the API
   const fetchAccounts = async () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -94,6 +101,7 @@ export default function AdminAccounts() {
     }
   };
 
+  // Handle account actions (make admin, employer, reset password, delete)
   const handleAccountAction = async (accountId: string, action: string) => {
     const token = localStorage.getItem('token');
     try {
@@ -121,6 +129,7 @@ export default function AdminAccounts() {
     }
   };
 
+  // Handle password reset confirmation
   const handlePasswordReset = async () => {
     if (!selectedAccountId) return;
 
@@ -146,9 +155,11 @@ export default function AdminAccounts() {
     }
   };
 
+  // Render the admin accounts management interface
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800">
       <Nav />
+      {/* Password reset confirmation dialog */}
       <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <DialogContent className="sm:max-w-[425px] p-6">
           <DialogHeader>
@@ -174,11 +185,13 @@ export default function AdminAccounts() {
           </div>
         </DialogContent>
       </Dialog>
+      {/* Main content area */}
       <div className="flex-grow container mx-auto px-4 py-8 mt-24">
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>Account Management</CardTitle>
+              {/* Search input */}
               <div className="flex items-center gap-2">
                 <Search className="w-4 h-4 text-gray-500" />
                 <Input
@@ -192,11 +205,13 @@ export default function AdminAccounts() {
             </div>
           </CardHeader>
           <CardContent>
+            {/* Error message display */}
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                 {error}
               </div>
             )}
+            {/* Accounts table */}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -229,6 +244,7 @@ export default function AdminAccounts() {
                       </span>
                     </TableCell>
                     <TableCell>
+                      {/* Account actions dropdown menu */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0 bg-transparent">

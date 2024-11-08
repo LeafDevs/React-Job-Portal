@@ -1,3 +1,4 @@
+// Import necessary dependencies and components
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import Nav from '@/components/ui/nav';
 import Footer from '@/components/ui/footer';
 import { HelpCircle } from 'lucide-react';
 
+// Define the Application interface to type-check the application data
 interface Application {
   id: string;
   applicantName: string;
@@ -48,6 +50,7 @@ interface Application {
 }
 
 export default function EmployerApplications() {
+  // State management for applications and UI controls
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,19 +59,23 @@ export default function EmployerApplications() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [appPage, setAppPage] = useState(1);
 
+  // Set page title on component mount
   useEffect(() => {
     document.title = 'Applications | HHS';
   }, []);
 
+  // Fetch applications data on component mount
   useEffect(() => {
     const fetchApplications = async () => {
       const token = localStorage.getItem('token');
+      // Redirect to auth if no token exists
       if (!token) {
         window.location.href = "/auth";
         return;
       }
 
       try {
+        // Fetch applications from API
         const response = await fetch(`http://localhost:3000/applications/job`, {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -77,6 +84,7 @@ export default function EmployerApplications() {
 
         const data = await response.json();
         
+        // Handle error responses
         if (data.code === 401) {
           throw new Error('Unauthorized');
         }
@@ -96,6 +104,7 @@ export default function EmployerApplications() {
     fetchApplications();
   }, []);
 
+  // Function to update application status (accept/reject)
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
     const token = localStorage.getItem('token');
     try {
@@ -114,7 +123,7 @@ export default function EmployerApplications() {
         throw new Error(data.error);
       }
 
-      // Update local state
+      // Update local state with new status
       setApplications(apps => 
         apps.map(app => 
           app.id === applicationId 
@@ -127,10 +136,12 @@ export default function EmployerApplications() {
     }
   };
 
+  // Filter applications based on selected status
   const filteredApplications = applications.filter(app => 
     statusFilter === 'all' ? true : app.status === statusFilter
   );
 
+  // Get appropriate badge color based on application status
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -140,6 +151,7 @@ export default function EmployerApplications() {
     }
   };
 
+  // Show application answers in dialog
   const showAnswers = (application: Application) => {
     setSelectedApplication(application);
     setIsDialogOpen(true);
@@ -152,6 +164,7 @@ export default function EmployerApplications() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Applications for {applications[0]?.jobTitle || 'Job'}</CardTitle>
+            {/* Status filter dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="w-[180px] border border-gray-300 rounded-md p-2 bg-[#C7AC59] text-white shadow-lg hover:bg-[#C7AC59]/80 transition-all duration-300">
@@ -167,6 +180,7 @@ export default function EmployerApplications() {
             </DropdownMenu>
           </CardHeader>
           <CardContent>
+            {/* Loading and error states */}
             {isLoading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -174,6 +188,7 @@ export default function EmployerApplications() {
             ) : error ? (
               <div className="text-red-500 text-center p-4">{error}</div>
             ) : (
+              // Applications table
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -205,6 +220,7 @@ export default function EmployerApplications() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2 items-center">
+                          {/* Accept/Reject buttons only shown for pending applications */}
                           {application.status === 'pending' && (
                             <>
                               <Button 
@@ -248,6 +264,7 @@ export default function EmployerApplications() {
           </CardContent>
         </Card>
       </div>
+      {/* Dialog for showing application answers */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -268,6 +285,7 @@ export default function EmployerApplications() {
                 </div>
             ))}
           </div>
+          {/* Pagination controls */}
           <div className="flex justify-between items-center mt-4 pt-4 border-t">
             <Button
               variant="outline"
