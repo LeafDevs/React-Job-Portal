@@ -10,6 +10,7 @@ import Posts from '@/paths/pending_posts/index.tsx'
 
 import Apps from '@/paths/applications/index.tsx'
 import AdminAccounts from './paths/accounts/index.tsx'
+import Training from './paths/training/index.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <Router>
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/admin/posts' element={<Posts />}/>
         <Route path='/employer/applications' element={<Apps />}/>
         <Route path='/admin/accounts' element={<AdminAccounts />}/>
+        <Route path='/training' element={<Training />}/>
       </Routes>
   </Router>
 )

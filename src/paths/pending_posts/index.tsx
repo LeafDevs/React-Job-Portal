@@ -45,7 +45,7 @@ export default function JobPostings() {
     if (token) {
       try {
         console.log('Making request to fetch inactive jobs...');
-        const response = await fetch('http://localhost:3000/jobs/fetch_inactive', {
+        const response = await fetch('https://api.lesbians.monster/jobs/fetch_inactive', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -104,7 +104,7 @@ export default function JobPostings() {
       }
 
       try {
-        const response = await fetch('http://localhost:3000/user', {
+        const response = await fetch('https://api.lesbians.monster/user', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -160,7 +160,7 @@ export default function JobPostings() {
   // Handle accepting or declining job posts
   const handleAccept = async (boolean: Boolean, accepted_job: Number) => {
     try {
-      const response = await fetch("http://localhost:3000/accept_post", {
+      const response = await fetch("https://api.lesbians.monster/accept_post", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',

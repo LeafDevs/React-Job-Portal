@@ -19,6 +19,7 @@ export default function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en')
   const [languages, setTranslations] = useState({});
+  const [isVisible, setIsVisible] = useState(true); // State to control visibility
 
   // Load translations for all supported languages on component mount
   useEffect(() => {
@@ -72,10 +73,34 @@ export default function Nav() {
     setLanguage(newLanguage)
     window.location.reload();
   }
+// Handle scroll event to hide/show the navigation
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (window.scrollY <= 100 && window.innerWidth < 768) { // Show when at the top
+            setIsVisible(true); // Within top area
+          } else if (window.scrollY > 100 && window.innerWidth < 768) { // Hide when scrolled down
+            setIsVisible(false); // Not within top area
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     // Main navigation header with dark glass effect
-    <header className="bg-[rgba(0,0,0,0.4)] backdrop-blur-md fixed w-full z-50 transition-colors duration-300 shadow-lg drop-shadow-[0_5px_12px_rgba(0,0,0,0.4)]">
+    <header className={`bg-[rgba(0,0,0,0.4)] backdrop-blur-md fixed w-full z-50 transition-colors duration-300 shadow-lg drop-shadow-[0_5px_12px_rgba(0,0,0,0.4)] ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and site title */}
@@ -148,7 +173,7 @@ export default function Nav() {
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
+            exit={{ height: 0, opacity: 0, y: -20 }} // Slide up effect
             transition={{ duration: 0.3 }}
             className="md:hidden bg-[rgba(0,0,0,0.4)] text-white w-full absolute left-0 drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)]"
           >

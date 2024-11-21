@@ -81,7 +81,7 @@ export default function Dashboard() {
 
       try {
         // Fetch user data from API
-        const response = await fetch('http://localhost:3000/user', {
+        const response = await fetch('https://api.lesbians.monster/user', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -171,7 +171,7 @@ export default function Dashboard() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/update_pfp', {
+      const response = await fetch('https://api.lesbians.monster/update_pfp', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -210,7 +210,7 @@ export default function Dashboard() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/update_banner', {
+      const response = await fetch('https://api.lesbians.monster/update_banner', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -284,7 +284,7 @@ export default function Dashboard() {
 
       console.log('Submitting payload:', payload);
 
-      const response = await fetch('http://localhost:3000/create_post', {
+      const response = await fetch('https://api.lesbians.monster/create_post', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -38,7 +38,7 @@ export default function JobPostings() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const response = await fetch('http://localhost:3000/jobs', {
+          const response = await fetch('https://api.lesbians.monster/jobs', {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,

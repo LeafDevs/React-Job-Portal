@@ -12,7 +12,7 @@ interface ErrorLoggerOptions {
 
 export default function errorLogger(options: ErrorLoggerOptions = {}): Plugin {
   const backendUrl = options.backendUrl || (process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:3000' 
+    ? 'https://api.lesbians.monster' 
     : 'https://api.lesbians.monster');
 
   return {

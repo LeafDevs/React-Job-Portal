@@ -27,7 +27,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, UserCheck, Trash, Search } from 'lucide-react';
+import { MoreHorizontal, UserCheck, Trash, Search, Plus } from 'lucide-react';
 
 // Define the Account interface for type checking
 interface Account {
@@ -48,6 +48,10 @@ export default function AdminAccounts() {
   const [searchQuery, setSearchQuery] = useState(''); // Search input value
   const [showResetDialog, setShowResetDialog] = useState(false); // Password reset dialog visibility
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null); // Selected account for actions
+  const [showCreateDialog, setShowCreateDialog] = useState(false); // Create account dialog visibility
+  const [newAccountEmail, setNewAccountEmail] = useState('');
+  const [newAccountPassword, setNewAccountPassword] = useState('');
+  const [newAccountName, setNewAccountName] = useState('');
 
   // Set page title and fetch accounts on component mount
   useEffect(() => {
@@ -80,7 +84,7 @@ export default function AdminAccounts() {
     }
 
     try {
-      const response = await fetch('http://localhost:3000/admin/accounts', {
+      const response = await fetch('https://api.lesbians.monster/admin/accounts', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -111,7 +115,7 @@ export default function AdminAccounts() {
         return;
       }
 
-      const response = await fetch(`http://localhost:3000/admin/accounts/${accountId}/${action}`, {
+      const response = await fetch(`https://api.lesbians.monster/admin/accounts/${accountId}/${action}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -135,7 +139,7 @@ export default function AdminAccounts() {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:3000/admin/accounts/${selectedAccountId}/temp-password`, {
+      const response = await fetch(`https://api.lesbians.monster/admin/accounts/${selectedAccountId}/temp-password`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -149,6 +153,38 @@ export default function AdminAccounts() {
       setError('Password has been reset to "password"');
       setShowResetDialog(false);
       setSelectedAccountId(null);
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message);
+    }
+  };
+
+  // Handle creating new account
+  const handleCreateAccount = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('https://api.lesbians.monster/register', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: newAccountEmail,
+          password: newAccountPassword,
+          name: newAccountName
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create account');
+      }
+
+      setShowCreateDialog(false);
+      setNewAccountEmail('');
+      setNewAccountPassword('');
+      setNewAccountName('');
+      fetchAccounts(); // Refresh the accounts list
     } catch (err) {
       const error = err as Error;
       setError(error.message);
@@ -185,22 +221,80 @@ export default function AdminAccounts() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Create account dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[425px] p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Create New Account</DialogTitle>
+            <DialogDescription className="text-sm text-gray-500 mt-2">
+              Enter the details for the new account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4 space-y-4">
+            <Input
+              type="text"
+              placeholder="Name"
+              value={newAccountName}
+              onChange={(e) => setNewAccountName(e.target.value)}
+            />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={newAccountEmail}
+              onChange={(e) => setNewAccountEmail(e.target.value)}
+            />
+            <Input
+              type="password"
+              placeholder="Password"
+              value={newAccountPassword}
+              onChange={(e) => setNewAccountPassword(e.target.value)}
+            />
+          </div>
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowCreateDialog(false)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateAccount}
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700"
+            >
+              Create Account
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Main content area */}
       <div className="flex-grow container mx-auto px-4 py-8 mt-24">
         <Card>
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>Account Management</CardTitle>
-              {/* Search input */}
-              <div className="flex items-center gap-2">
-                <Search className="w-4 h-4 text-gray-500" />
-                <Input
-                  type="text"
-                  placeholder="Search accounts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64"
-                />
+              <div className="flex items-center gap-4">
+                {/* Create account button */}
+                <Button
+                  onClick={() => setShowCreateDialog(true)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Account
+                </Button>
+                {/* Search input */}
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-gray-500" />
+                  <Input
+                    type="text"
+                    placeholder="Search accounts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-64"
+                  />
+                </div>
               </div>
             </div>
           </CardHeader>

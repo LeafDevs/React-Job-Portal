@@ -76,7 +76,7 @@ export default function EmployerApplications() {
 
       try {
         // Fetch applications from API
-        const response = await fetch(`http://localhost:3000/applications/job`, {
+        const response = await fetch(`https://api.lesbians.monster/applications/job`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -108,7 +108,7 @@ export default function EmployerApplications() {
   const updateApplicationStatus = async (applicationId: string, newStatus: string) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:3000/applications/${applicationId}/status`, {
+      const response = await fetch(`https://api.lesbians.monster/applications/${applicationId}/status`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

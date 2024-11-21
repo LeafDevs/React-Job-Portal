@@ -7,7 +7,8 @@
     "dev": "vite --host",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --host",
+    "build:prod": "npm run build && cd dist && rsync -avz -e 'ssh -i ~/Downloads/key.pem' * ubuntu@ssh.lesbians.monster:/home/ubuntu/fent && ssh -i ~/Downloads/key.pem ubuntu@ssh.lesbians.monster 'cd ~ && sudo rm -rf /var/www/frontend && sudo cp -r fent /var/www/frontend && sudo chmod 777 /var/www/frontend/'"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",

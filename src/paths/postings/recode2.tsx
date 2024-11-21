@@ -56,7 +56,7 @@ export default function JobPostings() {
 
       try {
         // Verify token validity with API
-        const response = await fetch('http://localhost:3000/user', {
+        const response = await fetch('https://api.lesbians.monster/user', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -87,7 +87,7 @@ export default function JobPostings() {
     const token = localStorage.getItem('token');
     if (token) {
       try {
-        const response = await fetch('http://localhost:3000/jobs', {
+        const response = await fetch('https://api.lesbians.monster/jobs', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -150,7 +150,7 @@ export default function JobPostings() {
     if (!token) return;
 
     try {
-      const response = await fetch(`http://localhost:3000/jobs/apply/${currentJob.id}`, {
+      const response = await fetch(`https://api.lesbians.monster/jobs/apply/${currentJob.id}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -191,7 +191,7 @@ export default function JobPostings() {
 
   // Render component UI
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 flex flex-col p">
       <Nav />
       <main className="container mx-auto px-6 py-24 flex-grow">
         <div className="max-w-4xl mx-auto mb-12">

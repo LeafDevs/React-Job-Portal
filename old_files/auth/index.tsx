@@ -16,15 +16,15 @@ export default function Auth() {
   const [name, setName] = useState('')
 
   const handleGoogleAuth = () => {
-    window.location.href = 'http://localhost:3000/auth/google';
+    window.location.href = 'https://api.lesbians.monster/auth/google';
   }
 
   const handleLogin = () => {
     let url = ""
     if(isLogin) {
-        url = "http://localhost:3000/auth"
+        url = "https://api.lesbians.monster/auth"
     } else {
-      url = "http://localhost:3000/register"
+      url = "https://api.lesbians.monster/register"
     }
     fetch(url, {
         method: 'POST',
