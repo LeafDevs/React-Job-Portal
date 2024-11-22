@@ -49,12 +49,10 @@ export default function Component() {
                 body: JSON.stringify({ email, password: "password", newPassword }),
             });
 
-            console.log(newPassword);
-
             const data = await response.json();
             if (data.code === 200) {
-                setPassword(newPassword);
-                handleLogin();
+                localStorage.setItem('token', data.token);
+                window.location.href = '/dash';
             } else {
                 setError(data.error || 'Failed to reset password');
             }
@@ -71,6 +69,12 @@ export default function Component() {
         // If changing temp password, handle that instead
         if (isChangingTempPassword) {
             await handlePasswordReset();
+            return;
+        }
+
+        // For registration, validate passwords match
+        if (!isLogin && password !== confirmPassword) {
+            setError('Passwords do not match');
             return;
         }
 
@@ -95,6 +99,16 @@ export default function Component() {
                     setPassword(''); // Clear password when going to reset
                     return;
                 }
+                
+                if (!isLogin) {
+                    if (!data.token) {
+                        setIsLogin(true); // Switch to login view
+                        setPassword(''); // Clear password field
+                        setError('Successfully Registered Please Login');
+                        return;
+                    }
+                }
+
                 localStorage.setItem('token', data.token);
                 window.location.href = '/dash';
                 return;

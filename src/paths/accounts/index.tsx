@@ -27,7 +27,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, UserCheck, Trash, Search, Plus } from 'lucide-react';
+import { MoreHorizontal, UserCheck, Trash, Search, Plus, Check } from 'lucide-react';
 
 // Define the Account interface for type checking
 interface Account {
@@ -39,10 +39,27 @@ interface Account {
   profile_picture?: string;
 }
 
+// Custom checkbox component
+const CustomCheckbox = ({ checked, onChange }: { checked: boolean, onChange: (checked: boolean) => void }) => {
+  return (
+    <div
+      className={`w-4 h-4 border rounded cursor-pointer flex items-center justify-center transition-colors
+        ${checked 
+          ? 'bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500' 
+          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-zinc-800'
+        }`}
+      onClick={() => onChange(!checked)}
+    >
+      {checked && <Check className="h-3 w-3 text-white" />}
+    </div>
+  );
+};
+
 export default function AdminAccounts() {
   // State management for accounts and UI controls
   const [accounts, setAccounts] = useState<Account[]>([]); // All accounts
   const [filteredAccounts, setFilteredAccounts] = useState<Account[]>([]); // Filtered accounts based on search
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]); // Selected account IDs
   const [isLoading, setIsLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null); // Error messages
   const [searchQuery, setSearchQuery] = useState(''); // Search input value
@@ -73,6 +90,51 @@ export default function AdminAccounts() {
       account.type.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredAccounts(filtered);
+  };
+
+  // Handle selecting/deselecting all accounts
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedAccounts(filteredAccounts.map(account => account.id));
+    } else {
+      setSelectedAccounts([]);
+    }
+  };
+
+  // Handle selecting/deselecting individual account
+  const handleSelectAccount = (accountId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedAccounts([...selectedAccounts, accountId]);
+    } else {
+      setSelectedAccounts(selectedAccounts.filter(id => id !== accountId));
+    }
+  };
+
+  // Handle mass actions on selected accounts
+  const handleMassAction = async (action: string) => {
+    const token = localStorage.getItem('token');
+    try {
+      if (action === 'temp-password') {
+        setShowResetDialog(true);
+        return;
+      }
+
+      const promises = selectedAccounts.map(accountId =>
+        fetch(`https://api.lesbians.monster/admin/accounts/${accountId}/${action}`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      );
+
+      await Promise.all(promises);
+      setSelectedAccounts([]);
+      fetchAccounts(); // Refresh the accounts list
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message);
+    }
   };
 
   // Fetch accounts from the API
@@ -135,24 +197,24 @@ export default function AdminAccounts() {
 
   // Handle password reset confirmation
   const handlePasswordReset = async () => {
-    if (!selectedAccountId) return;
-
+    const accountIds = selectedAccountId ? [selectedAccountId] : selectedAccounts;
     const token = localStorage.getItem('token');
+    
     try {
-      const response = await fetch(`https://api.lesbians.monster/admin/accounts/${selectedAccountId}/temp-password`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const promises = accountIds.map(id =>
+        fetch(`https://api.lesbians.monster/admin/accounts/${id}/temp-password`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to reset password');
-      }
-
-      setError('Password has been reset to "password"');
+      await Promise.all(promises);
+      setError('Password(s) have been reset to "password"');
       setShowResetDialog(false);
       setSelectedAccountId(null);
+      setSelectedAccounts([]);
     } catch (err) {
       const error = err as Error;
       setError(error.message);
@@ -201,7 +263,7 @@ export default function AdminAccounts() {
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Reset Password</DialogTitle>
             <DialogDescription className="text-sm text-gray-500 mt-2">
-              This will reset the user's password to "password". They will be required to change it on their next login.
+              This will reset the selected user(s) password to "password". They will be required to change it on their next login.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-end">
@@ -305,10 +367,47 @@ export default function AdminAccounts() {
                 {error}
               </div>
             )}
+
+            {/* Mass actions */}
+            {selectedAccounts.length > 0 && (
+              <div className="mb-4 flex gap-2">
+                <Button
+                  onClick={() => handleMassAction('admin')}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Make Admin
+                </Button>
+                <Button
+                  onClick={() => handleMassAction('employer')}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  Make Employer
+                </Button>
+                <Button
+                  onClick={() => handleMassAction('temp-password')}
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  Reset Passwords
+                </Button>
+                <Button
+                  onClick={() => handleMassAction('delete')}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete Accounts
+                </Button>
+              </div>
+            )}
+
             {/* Accounts table */}
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <CustomCheckbox
+                      checked={selectedAccounts.length === filteredAccounts.length}
+                      onChange={handleSelectAll}
+                    />
+                  </TableHead>
                   <TableHead>User</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
@@ -319,6 +418,12 @@ export default function AdminAccounts() {
               <TableBody>
                 {filteredAccounts.map((account) => (
                   <TableRow key={account.id}>
+                    <TableCell>
+                      <CustomCheckbox
+                        checked={selectedAccounts.includes(account.id)}
+                        onChange={(checked) => handleSelectAccount(account.id, checked)}
+                      />
+                    </TableCell>
                     <TableCell className="flex items-center gap-2">
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={account.profile_picture} />

@@ -11,7 +11,9 @@ import Posts from '@/paths/pending_posts/index.tsx'
 import Apps from '@/paths/applications/index.tsx'
 import AdminAccounts from './paths/accounts/index.tsx'
 import Training from './paths/training/index.tsx'
-
+import Settings from './paths/settings/index.tsx'
+import Messages from './paths/messages/index.tsx'
+import Profile from './paths/profile/index.tsx'
 createRoot(document.getElementById('root')!).render(
   <Router>
       <Routes>
@@ -24,6 +26,9 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/employer/applications' element={<Apps />}/>
         <Route path='/admin/accounts' element={<AdminAccounts />}/>
         <Route path='/training' element={<Training />}/>
+        <Route path='/settings' element={<Settings />}/>
+        <Route path='/messages' element={<Messages />}/>
+        <Route path='/profile/:id' element={<Profile />}/>
       </Routes>
   </Router>
 )
