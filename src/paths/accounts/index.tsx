@@ -19,6 +19,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import {
   Dialog,
@@ -27,7 +33,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, UserCheck, Trash, Search, Plus, Check } from 'lucide-react';
+import { MoreHorizontal, UserCheck, Trash, Search, Plus, Check, Shield, Briefcase, GraduationCap, Mail, Key } from 'lucide-react';
 
 // Define the Account interface for type checking
 interface Account {
@@ -338,14 +344,6 @@ export default function AdminAccounts() {
             <div className="flex justify-between items-center">
               <CardTitle>Account Management</CardTitle>
               <div className="flex items-center gap-4">
-                {/* Create account button */}
-                <Button
-                  onClick={() => setShowCreateDialog(true)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Account
-                </Button>
                 {/* Search input */}
                 <div className="flex items-center gap-2">
                   <Search className="w-4 h-4 text-gray-500" />
@@ -368,36 +366,6 @@ export default function AdminAccounts() {
               </div>
             )}
 
-            {/* Mass actions */}
-            {selectedAccounts.length > 0 && (
-              <div className="mb-4 flex gap-2">
-                <Button
-                  onClick={() => handleMassAction('admin')}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Make Admin
-                </Button>
-                <Button
-                  onClick={() => handleMassAction('employer')}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Make Employer
-                </Button>
-                <Button
-                  onClick={() => handleMassAction('temp-password')}
-                  className="bg-yellow-600 hover:bg-yellow-700"
-                >
-                  Reset Passwords
-                </Button>
-                <Button
-                  onClick={() => handleMassAction('delete')}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  Delete Accounts
-                </Button>
-              </div>
-            )}
-
             {/* Accounts table */}
             <Table>
               <TableHeader>
@@ -412,7 +380,44 @@ export default function AdminAccounts() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-right pr-6">
+                    {selectedAccounts.length > 0 ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleMassAction('admin')}>
+                            <Shield className="mr-2 h-4 w-4" />
+                            Make Admin
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMassAction('employer')}>
+                            <Briefcase className="mr-2 h-4 w-4" />
+                            Make Employer
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleMassAction('temp-password')}>
+                            <Key className="mr-2 h-4 w-4" />
+                            Reset Passwords
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => handleMassAction('delete')} className="text-red-600">
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete Accounts
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button
+                        onClick={() => setShowCreateDialog(true)}
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -450,32 +455,62 @@ export default function AdminAccounts() {
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {account.type !== 'admin' && (
-                            <DropdownMenuItem 
-                              onClick={() => handleAccountAction(account.id, 'admin')}
-                              className="text-blue-600"
-                            >
-                              <UserCheck className="mr-2 h-4 w-4" />
-                              Make Admin
-                            </DropdownMenuItem>
-                          )}
-                          {account.type !== 'employer' && (
-                            <DropdownMenuItem
-                              onClick={() => handleAccountAction(account.id, 'employer')} 
-                              className="text-green-600"
-                            >
-                              <UserCheck className="mr-2 h-4 w-4" />
-                              Make Employer
-                            </DropdownMenuItem>
-                          )}
+                        <DropdownMenuContent align="end" className="w-56">
+                          <DropdownMenuLabel>Account Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          
+                          <DropdownMenuGroup>
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger>
+                                <UserCheck className="mr-2 h-4 w-4" />
+                                <span>Change Role</span>
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent>
+                                <DropdownMenuItem 
+                                  onClick={() => handleAccountAction(account.id, 'admin')}
+                                  className="text-blue-600"
+                                >
+                                  <Shield className="mr-2 h-4 w-4" />
+                                  Admin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleAccountAction(account.id, 'employer')}
+                                  className="text-green-600"
+                                >
+                                  <Briefcase className="mr-2 h-4 w-4" />
+                                  Employer
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleAccountAction(account.id, 'student')}
+                                  className="text-purple-600"
+                                >
+                                  <GraduationCap className="mr-2 h-4 w-4" />
+                                  Student
+                                </DropdownMenuItem>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                          </DropdownMenuGroup>
+
+                          <DropdownMenuSeparator />
+                          
+                          <DropdownMenuItem
+                            onClick={() => handleAccountAction(account.id, 'verify-email')}
+                            className="text-blue-600"
+                          >
+                            <Mail className="mr-2 h-4 w-4" />
+                            Verify Email
+                          </DropdownMenuItem>
+                          
                           <DropdownMenuItem
                             onClick={() => handleAccountAction(account.id, 'temp-password')}
                             className="text-yellow-600"
                           >
-                            <UserCheck className="mr-2 h-4 w-4" />
+                            <Key className="mr-2 h-4 w-4" />
                             Reset Password
                           </DropdownMenuItem>
+
+                          <DropdownMenuSeparator />
+                          
                           <DropdownMenuItem 
                             onClick={() => handleAccountAction(account.id, 'delete')}
                             className="text-red-600"
