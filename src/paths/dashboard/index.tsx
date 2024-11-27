@@ -686,10 +686,10 @@ export default function Dashboard() {
         <h2 className="text-2xl font-bold mt-12 mb-6 text-zinc-950 dark:text-white">Featured Programs</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[
-            { icon: GraduationCap, title: "Career Development", description: "Explore career paths and opportunities." },
-            { icon: Users, title: "Networking", description: "Connect with peers and professionals." },
-            { icon: Library, title: "Skill Building", description: "Enhance your skills with workshops." },
-            { icon: Calendar, title: "Events", description: "Stay updated on upcoming events." },
+            { icon: GraduationCap, title: "Career Development", description: "Explore career paths and opportunities.", redirect: "/training" },
+            { icon: Users, title: "Networking", description: "Connect with peers and professionals.", redirect: "/training#networking" },
+            { icon: Library, title: "Skill Building", description: "Enhance your skills with workshops.", redirect: "/training#interview" },
+            { icon: Calendar, title: "Events", description: "Stay updated on upcoming events.", redirect: "/#events" },
           ].map((program, index) => (
             <Card key={index} className="flex flex-col h-full">
               <CardHeader>
@@ -700,7 +700,9 @@ export default function Dashboard() {
                 <CardDescription>{program.description}</CardDescription>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full">Learn More</Button>
+                <Button variant="outline" className="w-full" onClick={() => {
+                  window.location.href = program.redirect;
+                }}>Learn More</Button>
               </CardFooter>
             </Card>
           ))}

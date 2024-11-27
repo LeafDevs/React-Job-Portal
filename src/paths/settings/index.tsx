@@ -3,6 +3,7 @@ import Nav from '@/components/ui/nav';
 import Footer from '@/components/ui/footer';
 
 export default function Settings() {
+  // State for form fields
   const [bio, setBio] = useState('');
   const [socialLinks, setSocialLinks] = useState<{[key: string]: string}>({});
   const [currentPassword, setCurrentPassword] = useState('');
@@ -14,6 +15,9 @@ export default function Settings() {
   const [portfolio, setPortfolio] = useState('');
   const [resume, setResume] = useState('');
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+
+  // State to track modified fields
+  const [modifiedFields, setModifiedFields] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     document.title = 'Settings | HHS';
@@ -44,11 +48,15 @@ export default function Settings() {
         throw new Error('No data received from server');
       }
 
+      // Initialize form fields with user data
       setBio(data.bio || '');
       setSocialLinks(data.socialLinks || {});
       setPortfolio(data.portfolio || '');
       setResume(data.resume || '');
-      setTwoFactorEnabled(data.twoFactorEnabled || false);
+      setTwoFactorEnabled(data.twofa || false);
+
+      // Reset modified fields tracking
+      setModifiedFields(new Set());
     } catch (err) {
       const error = err as Error;
       setError(error.message);
@@ -102,11 +110,52 @@ export default function Settings() {
     }
   };
 
+  const handleFieldChange = (field: string, value: any) => {
+    // Update the field value
+    switch(field) {
+      case 'bio':
+        setBio(value);
+        break;
+      case 'portfolio':
+        setPortfolio(value);
+        break;
+      case 'resume':
+        setResume(value);
+        break;
+      case 'twofa':
+        setTwoFactorEnabled(value);
+        break;
+    }
+    
+    // Track modified field
+    setModifiedFields(prev => new Set([...prev, field]));
+  };
+
+  const handleSocialLinkChange = (platform: string, value: string) => {
+    setSocialLinks(prev => ({...prev, [platform]: value}));
+    setModifiedFields(prev => new Set([...prev, `socialLinks.${platform}`]));
+  };
+
   const handleProfileUpdate = async () => {
-    await updateSetting('bio', bio);
-    await updateSetting('social_links', socialLinks);
-    await updateSetting('portfolio', portfolio);
-    await updateSetting('resume', resume);
+    // Only update modified fields
+    for (const field of modifiedFields) {
+      if (field.startsWith('socialLinks.')) {
+        const platform = field.split('.')[1];
+        await updateSetting('social_links', {...socialLinks, [platform]: socialLinks[platform]});
+      } else {
+        const value: { [key: string]: any } = {
+          bio,
+          portfolio,
+          resume,
+          twofa: twoFactorEnabled
+        };
+        
+        await updateSetting(field, value[field]);
+      }
+    }
+    
+    // Clear modified fields after successful update
+    setModifiedFields(new Set());
   };
 
   const handlePasswordChange = async () => {
@@ -127,13 +176,14 @@ export default function Settings() {
     }
 
     try {
-      const response = await fetch('https://api.lesbians.monster/user/password', {
+      const response = await fetch('https://api.lesbians.monster/profile/edit', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          setting: 'password',
           currentPassword,
           newPassword
         })
@@ -141,6 +191,16 @@ export default function Settings() {
 
       if (!response.ok) {
         throw new Error('Failed to change password');
+      }
+
+      const result = await response.json();
+      if (result.code !== 200) {
+        throw new Error(result.error || 'Failed to change password');
+      }
+
+      if(result.code===200) {
+        localStorage.removeItem('token');
+        window.location.href = "/auth";
       }
 
       setShowPasswordDialog(false);
@@ -179,47 +239,62 @@ export default function Settings() {
           )}
 
           <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-sm p-6 space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
-              <textarea 
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="w-full p-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 resize-none" 
-                rows={3}
-              />
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
+              <div className="relative">
+                <textarea 
+                  value={bio}
+                  onChange={(e) => handleFieldChange('bio', e.target.value)}
+                  className="w-full px-4 py-3 bg-transparent border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors text-gray-900 dark:text-gray-100 resize-none" 
+                  rows={3}
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Portfolio Link</label>
-              <input 
-                type="url"
-                value={portfolio}
-                onChange={(e) => setPortfolio(e.target.value)}
-                className="w-full p-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100"
-              />
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Portfolio Link</label>
+              <div className="relative">
+                <input 
+                  type="url"
+                  value={portfolio}
+                  onChange={(e) => handleFieldChange('portfolio', e.target.value)}
+                  className="w-full px-4 py-3 bg-transparent border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors text-gray-900 dark:text-gray-100"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Resume Link</label>
-              <input 
-                type="url"
-                value={resume}
-                onChange={(e) => setResume(e.target.value)}
-                className="w-full p-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100"
-              />
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Resume Link</label>
+              <div className="relative">
+                <input 
+                  type="url"
+                  value={resume}
+                  onChange={(e) => handleFieldChange('resume', e.target.value)}
+                  className="w-full px-4 py-3 bg-transparent border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors text-gray-900 dark:text-gray-100"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Social Links</label>
-              {['twitter', 'github', 'linkedin'].map(platform => (
-                <div key={platform} className="mt-2">
-                  <input
-                    type="url"
-                    placeholder={platform.charAt(0).toUpperCase() + platform.slice(1)}
-                    value={socialLinks[platform] || ''}
-                    onChange={(e) => setSocialLinks({...socialLinks, [platform]: e.target.value})}
-                    className="w-full p-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100"
-                  />
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Social Links</label>
+              {[
+                { platform: 'twitter', url: 'https://twitter.com/' },
+                { platform: 'github', url: 'https://github.com/' },
+                { platform: 'linkedin', url: 'https://linkedin.com/in/' }
+              ].map(({ platform, url }) => (
+                <div key={platform} className="flex items-center space-x-4">
+                  <span className="text-gray-500 dark:text-gray-400 min-w-[120px]" data-notranslate>
+                    {url}
+                  </span>
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder={platform.charAt(0).toUpperCase() + platform.slice(1) + " username"}
+                      value={socialLinks[platform] || ''}
+                      onChange={(e) => handleSocialLinkChange(platform, e.target.value)}
+                      className="w-full px-4 py-3 bg-transparent border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors text-gray-900 dark:text-gray-100"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -228,24 +303,32 @@ export default function Settings() {
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">Security</h3>
               <button 
                 onClick={() => setShowPasswordDialog(true)} 
-                className="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
               >
                 Change Password
               </button>
-              <label className="flex items-center space-x-2">
-                <input 
-                  type="checkbox" 
-                  checked={twoFactorEnabled}
-                  onChange={(e) => setTwoFactorEnabled(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400" 
-                />
+              <label className="flex items-center space-x-3 cursor-pointer">
+                <div className="relative inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={twoFactorEnabled}
+                    onChange={(e) => handleFieldChange('twofa', e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                </div>
                 <span className="text-sm text-gray-700 dark:text-gray-300">Enable Two-Factor Authentication</span>
               </label>
             </div>
 
             <button 
               onClick={handleProfileUpdate}
-              className="w-full p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              disabled={modifiedFields.size === 0}
+              className={`w-full px-4 py-3 rounded-lg transition-colors ${
+                modifiedFields.size > 0 
+                  ? 'bg-blue-500 hover:bg-blue-600 text-white' 
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+              }`}
             >
               Save Changes
             </button>
@@ -253,41 +336,47 @@ export default function Settings() {
         </div>
 
         {showPasswordDialog && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-zinc-800 rounded-lg max-w-md w-full p-6">
               <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Change Password</h3>
               <div className="space-y-4">
-                <input
-                  type="password"
-                  placeholder="Current Password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full p-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100"
-                />
-                <input
-                  type="password"
-                  placeholder="New Password" 
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full p-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100"
-                />
-                <input
-                  type="password"
-                  placeholder="Confirm New Password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full p-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100"
-                />
-                <div className="flex justify-end gap-2">
+                <div className="relative">
+                  <input
+                    type="password"
+                    placeholder="Current Password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-transparent border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors text-gray-900 dark:text-gray-100"
+                  />
+                </div>
+                <div className="relative">
+                  <input
+                    type="password"
+                    placeholder="New Password" 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-transparent border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors text-gray-900 dark:text-gray-100"
+                  />
+                </div>
+                <div className="relative">
+                  <input
+                    type="password"
+                    placeholder="Confirm New Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-3 bg-transparent border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 outline-none transition-colors text-gray-900 dark:text-gray-100"
+                  />
+                </div>
+                <div className="flex justify-end space-x-3">
                   <button
                     onClick={() => setShowPasswordDialog(false)}
-                    className="px-4 py-2 border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 transition-colors"
+                    className="px-4 py-2 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handlePasswordChange}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
                   >
                     Change Password
                   </button>

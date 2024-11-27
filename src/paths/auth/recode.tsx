@@ -12,6 +12,12 @@ import {
 } from "@/components/ui/tooltip"
 import graphic from "@/assets/ram.avif"
 
+// Define the type for pendingLoginData
+interface PendingLoginData {
+    email: string;
+    // Add other properties if needed
+}
+
 export default function Component() {
     // State management for form fields and UI controls
     const [isLogin, setIsLogin] = useState(true) // Toggle between login and register views
@@ -25,6 +31,9 @@ export default function Component() {
     const [confirmNewPassword, setConfirmNewPassword] = useState('')
     const [error, setError] = useState('')
     const [needsVerification, setNeedsVerification] = useState(false)
+    const [needs2FA, setNeeds2FA] = useState(false)
+    const [twoFactorCode, setTwoFactorCode] = useState('')
+    const [pendingLoginData, setPendingLoginData] = useState<PendingLoginData | null>(null)
 
     // Handle Google OAuth authentication
     const handleGoogleAuth = () => {
@@ -54,6 +63,33 @@ export default function Component() {
         } catch (error) {
             setError('Error sending verification email. Please try again.');
             console.error('Error sending verification:', error);
+        }
+    }
+
+    // Handle 2FA verification
+    const handle2FAVerification = async () => {
+        if (!pendingLoginData) return;
+
+        try {
+            const response = await fetch("https://api.lesbians.monster/auth", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    code: twoFactorCode
+                }),
+            });
+
+            const data = await response.json();
+            if (data.code === 200) {
+                localStorage.setItem('token', data.token);
+                window.location.href = '/dash';
+            } else {
+                setError(data.error || 'Invalid 2FA code');
+            }
+        } catch (error) {
+            setError('Error verifying 2FA code. Please try again.');
+            console.error('Error during 2FA verification:', error);
         }
     }
 
@@ -117,6 +153,12 @@ export default function Component() {
 
             if (data.code === 401 && data.error === 'Please verify your email before logging in') {
                 setNeedsVerification(true);
+                return;
+            }
+
+            if (data.twoFA) {
+                setNeeds2FA(true);
+                setPendingLoginData(data);
                 return;
             }
 
@@ -186,14 +228,14 @@ export default function Component() {
                     {/* Header Section */}
                     <div className="space-y-2 text-center">
                         <h1 className="text-2xl sm:text-3xl font-bold tracking-tighter md:text-4xl text-black dark:text-white">
-                            {needsVerification ? "Please Verify Your Email" : (isChangingTempPassword ? "Change Temporary Password" : (isLogin ? "Welcome Back!" : "Start Your Success Story"))}
+                            {needs2FA ? "Two-Factor Authentication" : (needsVerification ? "Please Verify Your Email" : (isChangingTempPassword ? "Change Temporary Password" : (isLogin ? "Welcome Back!" : "Start Your Success Story")))}
                         </h1>
                         <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
-                            {needsVerification ? "Check your inbox for a verification email" : (isChangingTempPassword 
+                            {needs2FA ? "Please enter the verification code sent to your email" : (needsVerification ? "Check your inbox for a verification email" : (isChangingTempPassword 
                                 ? "Please set a new password for your account."
                                 : (isLogin
                                     ? "Login to your account to continue."
-                                    : "Sign up and start your job search journey!"))}
+                                    : "Sign up and start your job search journey!")))}
                         </p>
                     </div>
 
@@ -204,7 +246,27 @@ export default function Component() {
                         </div>
                     )}
 
-                    {needsVerification ? (
+                    {needs2FA ? (
+                        <form className="space-y-3 sm:space-y-4" onSubmit={(e) => {
+                            e.preventDefault()
+                            handle2FAVerification()
+                        }}>
+                            <div className="space-y-1 sm:space-y-2">
+                                <Label htmlFor="2fa-code" className="text-sm text-black dark:text-white">Verification Code</Label>
+                                <Input 
+                                    id="2fa-code" 
+                                    placeholder="Enter verification code" 
+                                    required 
+                                    value={twoFactorCode}
+                                    onChange={(e) => setTwoFactorCode(e.target.value)} 
+                                    className="text-sm bg-white dark:bg-zinc-800 text-black dark:text-white" 
+                                />
+                            </div>
+                            <Button className="w-full bg-[#C7AC59] text-black hover:bg-[#341A00] hover:text-white text-sm sm:text-base" type="submit">
+                                Verify
+                            </Button>
+                        </form>
+                    ) : needsVerification ? (
                         <Button 
                             className="w-full bg-[#C7AC59] text-black hover:bg-[#341A00] hover:text-white text-sm sm:text-base"
                             onClick={handleResendVerification}

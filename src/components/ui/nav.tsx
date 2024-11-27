@@ -1,6 +1,6 @@
 // Import necessary dependencies
 import { useState, useEffect } from 'react'
-import { Sun, Moon, ChevronLeft, Home as HomeIcon, Briefcase as JobIcon, LogIn as AuthIcon, Globe } from 'lucide-react'
+import { Sun, Moon, Home as HomeIcon, Briefcase as JobIcon, LogIn as AuthIcon, Globe, Users, Library, Settings2, LogOut } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   DropdownMenu,
@@ -12,16 +12,65 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Link } from 'react-router-dom'
 import t from '@/lib/translate'
+import { EnvelopeOpenIcon } from '@radix-ui/react-icons'
+
+interface User {
+  name: string;
+  email: string;
+  profile_info: {
+    profile_picture: string;
+  };
+}
 
 export default function Nav() {
   // Initialize state variables
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === "dark")
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(() => localStorage.getItem('isMenuOpen') === "true" || false)
   const [language, setLanguage] = useState(() => localStorage.getItem('language') || 'en')
   const [languages, setTranslations] = useState({});
-  const [isVisible, setIsVisible] = useState(true); // State to control visibility
+  const [isVisible, setIsVisible] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
 
-  // Load translations for all supported languages on component mount
+  // Load user data if logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if(!token && window.location.pathname !== "/" && window.location.pathname !== "/auth") window.location.href = "/auth";
+    if (token) {
+      console.log('Fetching user data with token:', token);
+      fetch('https://api.lesbians.monster/user', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(res => {
+        console.log('Response status:', res.status);
+        return res.json();
+      })
+      .then(data => {
+        console.log('Received user data:', data);
+        if (data.code === 200) {
+          console.log('Successfully set user data');
+          setUser(data);
+        } else if(data.code === 401 && data.error === "No user found") {
+          console.log('No user found, redirecting to auth');
+          localStorage.removeItem('token');
+          window.location.href = "/auth";
+        } else {
+          console.log('Unexpected response code:', data.code);
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching user:', err);
+        console.error('Error details:', {
+          message: err.message,
+          stack: err.stack
+        });
+      });
+    } else {
+      console.log('No token found in localStorage');
+    }
+  }, []);
+
   useEffect(() => {
     const loadTranslations = async () => {
       const translations = {
@@ -63,6 +112,10 @@ export default function Nav() {
     }
   }, [isDarkMode])
 
+  useEffect(() => {
+    localStorage.setItem('isMenuOpen', isMenuOpen.toString());
+  }, [isMenuOpen]);
+
   // Update language preference in localStorage when language changes
   useEffect(() => {
     localStorage.setItem('language', language)
@@ -73,18 +126,18 @@ export default function Nav() {
     setLanguage(newLanguage)
     window.location.reload();
   }
-// Handle scroll event to hide/show the navigation
+
+  // Handle scroll event to hide/show the navigation
   useEffect(() => {
     let ticking = false;
 
     const handleScroll = () => {
-
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          if (window.scrollY <= 100 && window.innerWidth < 768) { // Show when at the top
-            setIsVisible(true); // Within top area
-          } else if (window.scrollY > 100 && window.innerWidth < 768) { // Hide when scrolled down
-            setIsVisible(false); // Not within top area
+          if (window.scrollY <= 100 && window.innerWidth < 768) {
+            setIsVisible(true);
+          } else if (window.scrollY > 100 && window.innerWidth < 768) {
+            setIsVisible(false);
           }
           ticking = false;
         });
@@ -100,101 +153,174 @@ export default function Nav() {
 
   return (
     // Main navigation header with dark glass effect
-    <header className={`bg-[rgba(0,0,0,0.4)] backdrop-blur-md fixed w-full z-50 transition-colors duration-300 shadow-lg drop-shadow-[0_5px_12px_rgba(0,0,0,0.4)] ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+    <header className={`bg-[rgba(0,0,0,0.6)] backdrop-blur-md fixed w-full z-[100] transition-all duration-300 shadow-lg ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo and site title */}
-          <div className="flex items-center cursor-pointer" onClick={() => window.location.href = '/'}>
+          <Link to="/" className="flex items-center z-[200]">
             <img
               src="https://www.goldenrams.com/cms/lib/PA01000390/Centricity/Template/GlobalAssets/images///Logos/H-Gold-2.png"
               alt="Highlands School District Logo"
               className="h-10 w-10 mr-2 md:h-14 md:w-14 md:mr-3"
             />
             <span className="text-lg md:text-xl font-semibold text-white dark:text-[#C7AC59]" data-notranslate>Highlands SD</span>
-          </div>
-          {/* Desktop navigation menu */}
-          <nav className="hidden md:block">
-            <ul className="flex space-x-4">
-              {[
-                { name: 'Home', icon: <HomeIcon className="h-6 w-6" />, path: "/" },
-                { name: 'Jobs', icon: <JobIcon className="h-6 w-6" />, path: "/postings" },
-                { name: localStorage.getItem('token') ? 'Dashboard' : 'Login', icon: <AuthIcon className="h-6 w-6" />, path: localStorage.getItem('token') ? "/dash" : "/auth" }
-              ].map((item) => (
-                <li key={item.name}>
-                  <a
-                    href="#"
-                    onClick={() => window.location.href = item.path}
-                    className="flex flex-col items-center px-3 py-2 rounded-md text-sm font-medium text-white dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
-                  >
-                    {item.icon}
-                    <span className="mt-1 text-xs">{item.name}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-          {/* Right side controls (mobile menu, theme toggle, language selector) */}
-          <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Mobile menu toggle button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden bg-transparent inline-flex items-center justify-center p-2 rounded-md text-white dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300"
-            >
-              <ChevronLeft className={`h-6 w-6 ${isMenuOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-            </button>
+          </Link>
+
+          {/* Right side controls (hamburger menu, theme toggle, language selector) */}
+          <div className="flex items-center space-x-2 md:space-x-4 transition-all duration-300 z-[200]">
             {/* Theme toggle button */}
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="bg-white dark:bg-white p-2 rounded-full text-[#341A00] dark:text-[#341A00] hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300"
+              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="bg-white dark:bg-white p-2 rounded-full text-[#341A00] dark:text-[#341A00] hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300 z-[200]"
             >
               {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
+
             {/* Language selector dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="rounded-lg bg-[#C7AC59] hover:bg-[#341A00] cursor-pointer p-2">
-                <Globe className="h-5 w-5 text-white" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Select Language</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {Object.entries(languages).map(([key, value]) => (
-                  <DropdownMenuItem data-notranslate key={key} onClick={() => handleLanguageChange(key)}>
-                    {value as string}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="relative">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="rounded-lg bg-[#C7AC59] hover:bg-[#341A00] cursor-pointer p-2 transition-colors duration-300 z-[200]">
+                  <Globe className="h-5 w-5 text-white" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="absolute right-0 mt-2 max-h-[60vh] overflow-y-auto">
+                  <DropdownMenuLabel>Select Language</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {Object.entries(languages).map(([key, value]) => (
+                    <DropdownMenuItem data-notranslate key={key} onClick={() => handleLanguageChange(key)}>
+                      {value as string}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Hamburger menu button */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-expanded={isMenuOpen}
+              aria-label="Toggle menu"
+              className="bg-transparent inline-flex items-center justify-center p-2 rounded-md text-white dark:text-[#C7AC59] hover:text-[#A08339] dark:hover:text-[#C7AC59] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#341A00] focus:ring-[#C7AC59] transition-colors duration-300 relative z-[110]"
+            >
+              <svg 
+                className={`h-5 w-5 transition-transform duration-200 ${isMenuOpen ? 'rotate-90 opacity-0' : 'rotate-0 opacity-100'}`}
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg 
+                className={`h-5 w-5 transition-transform duration-200 absolute top-2 left-2 ${isMenuOpen ? 'rotate-0 opacity-100' : '-rotate-90 opacity-0'}`}
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
-      {/* Mobile navigation menu with animation */}
+
+      {/* Sidebar navigation menu with animation */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0, y: -20 }} // Slide up effect
-            transition={{ duration: 0.3 }}
-            className="md:hidden bg-[rgba(0,0,0,0.4)] text-white w-full absolute left-0 drop-shadow-[0_5px_12px_rgba(0,0,0,0.8)]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[101] bg-black/20" 
+            onClick={() => setIsMenuOpen(false)}
           >
-            <ul className="flex flex-col space-y-4 p-4">
-              {[
-                { name: 'Home', icon: <HomeIcon className="h-6 w-6" />, path: "/" },
-                { name: 'Jobs', icon: <JobIcon className="h-6 w-6" />, path: "/postings" },
-                { name: 'Login', icon: <AuthIcon className="h-6 w-6" />, path: "/auth" }
-              ].map((item, index) => (
-                <motion.li key={item.name} initial={{ x: 100, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 100, opacity: 0 }} transition={{ delay: index * 0.1 }}>
-                  <Link
-                    to={item.path}
-                    className="flex items-center block px-3 py-2 text-white rounded-md text-sm font-medium hover:text-[#A08339] dark:hover:text-[#C7AC59] transition-colors duration-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {item.icon}
-                    <span className="ml-2">{item.name}</span>
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed right-0 top-0 h-screen w-full md:w-80 bg-zinc-900/95 backdrop-blur-sm shadow-xl overflow-y-auto flex flex-col pt-16"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Navigation Header */}
+              <div className="p-6 border-b border-zinc-700">
+                <h2 className="text-xl font-semibold text-[#C7AC59]">Navigation</h2>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="flex-grow p-6">
+                <ul className="space-y-6">
+                  {[
+                    { name: 'Home', icon: <HomeIcon className="h-5 w-5" />, path: "/" },
+                    { name: 'Jobs', icon: <JobIcon className="h-5 w-5" />, path: "/postings" },
+                    { name: 'Employers', icon: <Users className="h-5 w-5" />, path: "/employers" },
+                    { name: 'Resources', icon: <Library className="h-5 w-5" />, path: "/training" },
+                    ...(localStorage.getItem('token') ? [
+                      { name: 'Messages', icon: <EnvelopeOpenIcon className="h-5 w-5" />, path: "/messages" },
+                      { name: 'Settings', icon: <Settings2 className="h-5 w-5" />, path: "/settings" }
+                    ] : []),
+                    { 
+                      name: localStorage.getItem('token') ? 'Dashboard' : 'Login', 
+                      icon: <AuthIcon className="h-5 w-5" />, 
+                      path: localStorage.getItem('token') ? "/dash" : "/auth" 
+                    }
+                  ].map((item) => (
+                    <motion.li
+                      key={item.name}
+                      initial={{ x: 20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      <Link
+                        to={item.path}
+                        className="flex items-center space-x-4 text-zinc-100 hover:text-[#C7AC59] transition-colors duration-200"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <span className="text-[#C7AC59]">{item.icon}</span>
+                        <span className="text-base font-medium">{item.name}</span>
+                      </Link>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* User Profile Section */}
+              {user ? (
+                <div className="p-6 border-t border-zinc-700">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4 overflow-hidden">
+                      <img 
+                        src={user.profile_info?.profile_picture || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + user.name} 
+                        alt="Profile" 
+                        className="w-12 h-12 rounded-full flex-shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-[#C7AC59] font-medium truncate">{user.name}</p>
+                        <p className="text-zinc-400 text-sm truncate">{user.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('token');
+                        window.location.href = '/';
+                      }}
+                      className="text-zinc-400 hover:text-[#C7AC59] transition-colors duration-200 bg-transparent flex-shrink-0 ml-2"
+                    >
+                      <LogOut className="h-5 w-5 rotate-180" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 border-t border-zinc-700 flex items-center justify-between">
+                  <p className="text-[#C7AC59] font-medium">Login</p>
+                  <Link to="/auth">
+                    <AuthIcon className="h-5 w-5 text-[#C7AC59] hover:text-zinc-100 transition-colors duration-200 bg-transparent" />
                   </Link>
-                </motion.li>
-              ))}
-            </ul>
+                </div>
+              )}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

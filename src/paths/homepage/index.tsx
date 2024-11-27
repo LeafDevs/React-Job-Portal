@@ -172,7 +172,7 @@ export default function HomePage() {
                 {imageData[currentDataIndex].buttonText}
               </Button>
               {/* Carousel navigation dots */}
-              <div className={`flex mt-4 md:mt-8 space-x-4 relative z-50`}>
+              <div className={`flex mt-4 md:mt-8 space-x-4 relative z-10`}>
                 {[0, 1, 2].map((index) => (
                   <button
                     key={index}
@@ -180,7 +180,7 @@ export default function HomePage() {
                       setCurrentDataIndex(index);
                       setCurrentImageIndex(index === 0 ? 0 : index === 1 ? 1 : 2);
                     }}
-                    className={`w-2 h-2 md:w-3 md:h-3 rounded-full cursor-pointer transition-colors duration-300 ${
+                    className={`aspect-square w-2 h-2 md:w-3 md:h-3 rounded-[50%] cursor-pointer transition-colors duration-300 ${
                       currentDataIndex === index
                         ? 'bg-[#C7AC59]'
                         : 'bg-white bg-opacity-50 hover:bg-opacity-75'
@@ -272,7 +272,7 @@ export default function HomePage() {
                   </div>
                 </section>
 
-                <section className="mb-8 md:mb-16">
+                <section className="mb-8 md:mb-16" id="events">
                   <div className="container mx-auto px-4">
                     <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-8 text-center text-zinc-950 dark:text-white">Upcoming Events</h2>
                     <div className="space-y-4">
