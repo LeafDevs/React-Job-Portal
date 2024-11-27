@@ -201,6 +201,14 @@ export default function JobPostings() {
           <p className="text-zinc-600 dark:text-zinc-300 text-center text-lg">
             Find and apply for job opportunities
           </p>
+          <div className="flex justify-center mt-4">
+            <a 
+              href="/employers"
+              className="text-[#C7AC59] hover:text-[#B69B48] font-medium"
+            >
+              View All Employers →
+            </a>
+          </div>
         </div>
 
         {/* Search and filter section */}

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import Nav from '@/components/ui/nav';
 import Footer from '@/components/ui/footer';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Calendar, Briefcase, Link, FileText, MapPin, Globe, Heart, MessageCircle, Share2, SmilePlus, ImagePlus } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
+import { Mail, Calendar, MapPin, Globe, SmilePlus, ImagePlus, X, User, Trash2 } from 'lucide-react';
 
 interface Profile {
+  id: string;
   name: string;
   type: string;
   email: string;
@@ -34,13 +34,11 @@ interface Post {
   images?: string[];
 }
 
-interface SearchResult {
-  id: string;
-  name: string;
-  profile_info: {
-    profile_picture?: string;
-  };
-}
+// interface SearchResult {
+//   id: string;
+//   name: string;
+//   profile_info: Profile['profile_info'];
+// }
 
 interface UserData {
   id: string;
@@ -59,7 +57,7 @@ export default function Profile() {
   const [postImages, setPostImages] = useState<File[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-
+  const [canPost, setCanPost] = useState(false);
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -87,7 +85,7 @@ export default function Profile() {
 
       const data = await response.json();
       console.log(data);
-      setPosts(Array.isArray(data) ? data : []); // Ensure data is an array
+      setPosts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching posts:', err);
     }
@@ -131,7 +129,6 @@ export default function Profile() {
 
       const newPost = await response.json();
       
-      // Create a complete post object with all required fields
       const completePost: Post = {
         ...newPost,
         likes: 0,
@@ -141,7 +138,6 @@ export default function Profile() {
         created_at: new Date().toISOString()
       };
 
-      // Update posts state with the new post
       setPosts(prevPosts => [completePost, ...(Array.isArray(prevPosts) ? prevPosts : [])]);
       
       setNewPostContent('');
@@ -170,7 +166,6 @@ export default function Profile() {
       const profileData = await response.json();
       setProfile(profileData);
 
-      // Check if viewing own profile
       const selfResponse = await fetch('https://api.lesbians.monster/user', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -184,6 +179,8 @@ export default function Profile() {
       const userData: UserData = await selfResponse.json();
       setIsFollowing(userData.following?.includes(profileData.id.toString()) || false);
       setIsOwnProfile(userData.id === profileData.id);
+
+      setCanPost(profileData.type === 'employer' || profileData.type === 'admin');
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -240,252 +237,126 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-zinc-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-zinc-900 dark:to-black">
       <Nav />
-
-      <main className="flex-1 py-24">
-        {/* Search Bar */}
-        <div className="bg-white dark:bg-zinc-800 border-b border-gray-200 dark:border-zinc-700 py-6">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="relative">
-              <input
-                type="search"
-                placeholder="Search profiles..."
-                className="w-full px-4 py-2 pl-10 pr-4 rounded-lg bg-gray-50 dark:bg-zinc-700 text-gray-900 dark:text-white border border-gray-200 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onChange={async (e) => {
-                  const token = localStorage.getItem('token');
-                  if (e.target.value.length > 2) {
-                    try {
-                      const response = await fetch(`https://api.lesbians.monster/search/profiles?q=${e.target.value}`, {
-                        headers: {
-                          'Authorization': `Bearer ${token}`
-                        }
-                      });
-                      if (response.ok) {
-                        const results = await response.json();
-                        console.log(results);
-                        // Create or update dropdown with search results
-                        const dropdown = document.querySelector('#search-results');
-                        if (!dropdown) {
-                          const newDropdown = document.createElement('div');
-                          newDropdown.id = 'search-results';
-                          newDropdown.className = 'absolute z-10 w-full mt-2 bg-white dark:bg-zinc-800 rounded-lg shadow-lg border border-gray-200 dark:border-zinc-700';
-                          
-                          const resultsList = document.createElement('div');
-                          resultsList.className = 'py-2';
-                          
-                          results.forEach((result: SearchResult) => {
-                            const resultItem = document.createElement('a');
-                            resultItem.href = `/profile/${result.id}`;
-                            resultItem.className = 'block px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700';
-                            
-                            const resultContent = document.createElement('div');
-                            resultContent.className = 'flex items-center';
-                            
-                            const avatar = document.createElement('div');
-                            avatar.className = 'w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-600 mr-3';
-                            if (result.profile_info.profile_picture) {
-                              avatar.style.backgroundImage = `url(${result.profile_info.profile_picture})`;
-                              avatar.style.backgroundSize = 'cover';
-                            }
-                            
-                            const name = document.createElement('span');
-                            name.textContent = result.name;
-                            
-                            resultContent.appendChild(avatar);
-                            resultContent.appendChild(name);
-                            resultItem.appendChild(resultContent);
-                            resultsList.appendChild(resultItem);
-                          });
-                          
-                          newDropdown.appendChild(resultsList);
-                          e.target.parentElement?.appendChild(newDropdown);
-                        } else {
-                          dropdown.innerHTML = '';
-                          const resultsList = document.createElement('div');
-                          resultsList.className = 'py-2';
-                          
-                          results.forEach((result: SearchResult) => {
-                            const resultItem = document.createElement('a');
-                            resultItem.href = `/profile/${result.id}`;
-                            resultItem.className = 'block px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-700';
-                            
-                            const resultContent = document.createElement('div');
-                            resultContent.className = 'flex items-center';
-                            
-                            const avatar = document.createElement('div');
-                            avatar.className = 'w-8 h-8 rounded-full bg-gray-200 dark:bg-zinc-600 mr-3';
-                            if (result.profile_info.profile_picture) {
-                              avatar.style.backgroundImage = `url(${result.profile_info.profile_picture})`;
-                              avatar.style.backgroundSize = 'cover';
-                            }
-                            
-                            const name = document.createElement('span');
-                            name.textContent = result.name;
-                            
-                            resultContent.appendChild(avatar);
-                            resultContent.appendChild(name);
-                            resultItem.appendChild(resultContent);
-                            resultsList.appendChild(resultItem);
-                          });
-                          
-                          dropdown.appendChild(resultsList);
-                        }
-                      }
-                    } catch (err) {
-                      console.error('Error searching profiles:', err);
-                    }
-                  }
-                }}
-              />
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative h-[200px] md:h-[300px] w-full">
-          {profile?.profile_info.banner && (
+      <main className="relative">
+        {/* Profile Banner */}
+        <div className="h-[500px] w-full relative">
+          {profile?.profile_info.banner ? (
             <img 
               src={profile.profile_info.banner}
               alt="Profile Banner"
               className="w-full h-full object-cover"
             />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 animate-gradient-x" />
           )}
-          <div className="absolute inset-0 bg-black/10" />
+          <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
         </div>
 
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="relative -mt-20 mb-8">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between">
-              <div className="flex items-end">
-                <Avatar className="h-32 w-32 md:h-40 md:w-40 border-4 border-white dark:border-zinc-900 rounded-full">
-                  {profile?.profile_info.profile_picture && (
-                    <AvatarImage 
+        <div className="max-w-4xl mx-auto px-4 -mt-40 relative z-10">
+          {/* Profile Card */}
+          <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl p-12 border border-white/20 dark:border-zinc-700/30">
+            <div className="flex flex-col items-center text-center">
+              {/* Profile Picture */}
+              <div className="mb-8">
+                <div className="h-40 w-40 rounded-full overflow-hidden ring-4 ring-white dark:ring-zinc-700 shadow-2xl">
+                  {profile?.profile_info.profile_picture ? (
+                    <img 
                       src={profile.profile_info.profile_picture}
                       alt={profile.name}
+                      className="w-full h-full object-cover"
                     />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-700 dark:to-zinc-800 flex items-center justify-center">
+                      <User className="w-16 h-16 text-gray-400" />
+                    </div>
                   )}
-                  <AvatarFallback>{profile?.name?.[0]}</AvatarFallback>
-                </Avatar>
-
-                <div className="ml-4 mb-4">
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-                    {profile?.name}
-                  </h1>
-                  <div className="text-gray-600 dark:text-gray-400 flex items-center">
-                    <Briefcase className="h-4 w-4 mr-1" />
-                    <span>{profile?.type ? profile.type.charAt(0).toUpperCase() + profile.type.slice(1) : ''}</span>
-                  </div>
                 </div>
+              </div>
+
+              {/* Profile Info */}
+              <div className="space-y-4 mb-8">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+                  {profile?.name}
+                </h1>
+                <p className="text-xl text-gray-600 dark:text-gray-300">
+                  {profile?.type ? profile.type.charAt(0).toUpperCase() + profile.type.slice(1) : ''}
+                </p>
+                <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
+                  {profile?.profile_info.bio}
+                </p>
               </div>
 
               {!isOwnProfile ? (
                 <button
                   onClick={handleFollow}
-                  className={`mt-4 md:mt-0 px-6 py-2 rounded-full font-medium transition ${
+                  className={`px-10 py-3 rounded-full font-medium text-lg transition-all ${
                     isFollowing 
-                      ? 'bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-white'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                      ? 'bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-zinc-600'
+                      : 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:opacity-90'
                   }`}
                 >
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
               ) : (
-                <button
-                  onClick={() => setShowCreatePost(!showCreatePost)}
-                  className="mt-4 md:mt-0 px-6 py-2 rounded-full font-medium bg-blue-500 text-white hover:bg-blue-600"
-                >
-                  Create Post
-                </button>
+                canPost && (
+                  <button
+                    onClick={() => setShowCreatePost(!showCreatePost)}
+                    className="px-10 py-3 rounded-full font-medium text-lg bg-gradient-to-r from-sky-500 to-sky-600 text-white hover:opacity-90 transition-all"
+                  >
+                    Create Post
+                  </button>
+                )
               )}
-            </div>
 
-            {/* Profile Info */}
-            <div className="mt-6 space-y-4">
-              <p className="text-gray-700 dark:text-gray-300 text-lg">
-                {profile?.profile_info.bio}
-              </p>
-
-              <div className="flex flex-wrap gap-4 text-gray-600 dark:text-gray-400">
-                {profile?.profile_info.location && (
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-1" />
-                    <span>{profile.profile_info.location}</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-12 w-full">
+                <div className="text-center">
+                  <div className="text-gray-600 dark:text-gray-400">
+                    <MapPin className="h-6 w-6 mx-auto mb-2" />
+                    <span>{profile?.profile_info.location || 'Location not set'}</span>
                   </div>
-                )}
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  <span>Joined {new Date(profile?.created_at || '').toLocaleDateString()}</span>
                 </div>
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 mr-1" />
-                  <span>{profile?.email}</span>
+                <div className="text-center">
+                  <div className="text-gray-600 dark:text-gray-400">
+                    <Calendar className="h-6 w-6 mx-auto mb-2" />
+                    <span>Joined {new Date(profile?.created_at || '').toLocaleDateString()}</span>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex flex-wrap gap-4">
-                {profile?.profile_info.portfolio && (
-                  <a
-                    href={profile.profile_info.portfolio}
-                    target="_blank"
-                    rel="noopener noreferrer" 
-                    className="flex items-center text-blue-500 hover:underline"
-                  >
-                    <Globe className="h-4 w-4 mr-1" />
+                <div className="text-center">
+                  <div className="text-gray-600 dark:text-gray-400">
+                    <Mail className="h-6 w-6 mx-auto mb-2" />
+                    <span>{profile?.email}</span>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-gray-600 dark:text-gray-400">
+                    <Globe className="h-6 w-6 mx-auto mb-2" />
                     <span>Portfolio</span>
-                  </a>
-                )}
-
-                {profile?.profile_info.resume && (
-                  <a
-                    href={profile.profile_info.resume}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-500 hover:underline"
-                  >
-                    <FileText className="h-4 w-4 mr-1" />
-                    <span>Resume</span>
-                  </a>
-                )}
-
-                {Object.entries(profile?.profile_info.social_links || {}).map(([platform, url]) => (
-                  <a
-                    key={platform}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center text-blue-500 hover:underline"
-                  >
-                    <Link className="h-4 w-4 mr-1" />
-                    <span>{platform}</span>
-                  </a>
-                ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Create Post Form */}
-          {showCreatePost && (
-            <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 mb-8">
+          {showCreatePost && canPost && (
+            <div className="mt-8 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl rounded-[2rem] shadow-xl p-8 border border-white/20 dark:border-zinc-700/30">
               <textarea
-                placeholder="What's on your mind?"
-                className="w-full p-4 rounded-lg bg-gray-50 dark:bg-zinc-700 text-gray-900 dark:text-white resize-none mb-4"
+                placeholder="Share your thoughts..."
+                className="w-full p-6 rounded-2xl bg-white/50 dark:bg-zinc-700/50 text-gray-900 dark:text-white resize-none mb-6 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 rows={4}
                 value={newPostContent}
                 onChange={(e) => setNewPostContent(e.target.value)}
               />
 
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 {postImages.map((image, index) => (
-                  <div key={index} className="relative aspect-square">
+                  <div key={index} className="relative aspect-video rounded-2xl overflow-hidden">
                     <img
                       src={URL.createObjectURL(image)}
                       alt={`Upload preview ${index + 1}`}
-                      className="w-full h-full object-cover rounded-lg"
+                      className="w-full h-full object-cover"
                     />
                     <button
                       onClick={() => {
@@ -493,9 +364,9 @@ export default function Profile() {
                         newImages.splice(index, 1);
                         setPostImages(newImages);
                       }}
-                      className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full"
+                      className="absolute top-2 right-2 p-2 bg-black/50 backdrop-blur-sm text-white rounded-full hover:bg-black/70 transition-colors"
                     >
-                      ×
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
@@ -518,17 +389,16 @@ export default function Profile() {
                   />
                   <label
                     htmlFor="image-upload"
-                    className="cursor-pointer flex items-center text-gray-600 dark:text-gray-400 hover:text-blue-500 bg-transparent"
+                    className="p-3 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-600 cursor-pointer transition-colors"
                   >
-                    <ImagePlus className="h-4 w-4" />
-                    <span className="ml-2">({postImages.length}/4)</span>
+                    <ImagePlus className="h-6 w-6" />
                   </label>
 
                   <button
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="text-gray-600 dark:text-gray-400 hover:text-blue-500 bg-transparent"
+                    className="p-3 rounded-xl bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors"
                   >
-                    <SmilePlus className="h-4 w-4" />
+                    <SmilePlus className="h-6 w-6" />
                   </button>
                 </div>
 
@@ -545,14 +415,14 @@ export default function Profile() {
                     uploadPost(newPost);
                   }}
                   disabled={!newPostContent.trim()}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                  className="px-8 py-3 rounded-xl font-medium text-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:opacity-90 disabled:opacity-50 transition-all"
                 >
-                  Post
+                  Share
                 </button>
               </div>
 
               {showEmojiPicker && (
-                <div className="absolute z-10">
+                <div className="absolute z-20 mt-2">
                   <EmojiPicker
                     onEmojiClick={(emojiObject) => {
                       setNewPostContent(newPostContent + emojiObject.emoji);
@@ -565,125 +435,95 @@ export default function Profile() {
           )}
 
           {/* Posts */}
-          <div className="space-y-6">
+          <div className="mt-8 space-y-8">
             {posts.length > 0 ? (
               posts.map((post) => (
-                <div key={post.id} className="bg-white dark:bg-zinc-800 rounded-xl p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-start space-x-4">
-                      <Avatar className="h-12 w-12">
-                        {profile?.profile_info.profile_picture && (
-                          <AvatarImage
+                <div key={post.id} className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl rounded-[2rem] shadow-xl p-8 border border-white/20 dark:border-zinc-700/30">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-12 w-12 rounded-full overflow-hidden">
+                        {profile?.profile_info.profile_picture ? (
+                          <img
                             src={profile.profile_info.profile_picture}
                             alt={profile.name}
+                            className="w-full h-full object-cover"
                           />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-700 dark:to-zinc-800 flex items-center justify-center">
+                            <User className="w-6 h-6 text-gray-400" />
+                          </div>
                         )}
-                        <AvatarFallback>{profile?.name?.[0]}</AvatarFallback>
-                      </Avatar>
+                      </div>
 
                       <div>
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                           {profile?.name}
                         </h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                           {new Date(post.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
 
-                    {isOwnProfile && (
-                      <div className="relative">
-                        <button 
-                          onClick={() => {
-                            const dropdown = document.getElementById(`dropdown-${post.id}`);
-                            if (dropdown) {
-                              dropdown.classList.toggle('hidden');
+                    {isOwnProfile && canPost && (
+                      <button 
+                        onClick={async () => {
+                          const token = localStorage.getItem('token');
+                          try {
+                            const response = await fetch(`https://api.lesbians.monster/posts/${post.id}/delete`, {
+                              method: 'GET',
+                              headers: {
+                                'Authorization': `Bearer ${token}`
+                              }
+                            });
+                            
+                            if (!response.ok) {
+                              throw new Error('Failed to delete post');
                             }
-                          }}
-                          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-transparent"
-                        >
-                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                          </svg>
-                        </button>
-                        <div 
-                          id={`dropdown-${post.id}`}
-                          className="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-zinc-700 ring-1 ring-black ring-opacity-5 z-10"
-                        >
-                          <div className="py-1">
-                            <button
-                              onClick={async () => {
-                                const token = localStorage.getItem('token');
-                                try {
-                                  const response = await fetch(`https://api.lesbians.monster/posts/${post.id}/delete`, {
-                                    method: 'GET',
-                                    headers: {
-                                      'Authorization': `Bearer ${token}`
-                                    }
-                                  });
-                                  
-                                  if (!response.ok) {
-                                    throw new Error('Failed to delete post');
-                                  }
-                                  
-                                  setPosts(posts.filter(p => p.id !== post.id));
-                                } catch (err) {
-                                  console.error('Error deleting post:', err);
-                                }
-                              }}
-                              className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-zinc-600 bg-transparent"
-                            >
-                              Delete Post
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                            
+                            setPosts(posts.filter(p => p.id !== post.id));
+                          } catch (err) {
+                            console.error('Error deleting post:', err);
+                          }
+                        }}
+                        className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-xl transition-colors bg-transparent"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
                     )}
                   </div>
 
-                  <p className="text-gray-700 dark:text-gray-300 mb-4">
+                  <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-6">
                     {post.content}
                   </p>
 
                   {post.images && (
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-2 gap-4">
                       {post.images.map((image, index) => (
                         <img
                           key={index}
                           src={image}
                           alt={`Post image ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full aspect-video object-cover rounded-2xl"
                         />
                       ))}
                     </div>
                   )}
-
-                  <div className="flex items-center space-x-6 text-gray-600 dark:text-gray-400">
-                    <button className="flex items-center space-x-2 bg-transparent">
-                      <Heart className="h-5 w-5" />
-                      <span>{post.likes}</span>
-                    </button>
-                    <button className="flex items-center space-x-2 bg-transparent">
-                      <MessageCircle className="h-5 w-5" />
-                      <span>{post.comments}</span>
-                    </button>
-                    <button className="flex items-center space-x-2 bg-transparent">
-                      <Share2 className="h-5 w-5" />
-                      <span>{post.shares}</span>
-                    </button>
-                  </div>
                 </div>
               ))
             ) : (
-              <div className="bg-white dark:bg-zinc-800 rounded-xl p-6 text-center">
-                <p className="text-gray-600 dark:text-gray-400">This user hasn't posted anything yet.</p>
+              <div className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl rounded-[2rem] shadow-xl p-12 text-center border border-white/20 dark:border-zinc-700/30">
+                <p className="text-gray-600 dark:text-gray-400 text-xl">No posts yet</p>
               </div>
             )}
           </div>
         </div>
       </main>
 
-      <Footer string="blocky" />
+      <div className="mt-20">
+        <Footer string="blocky" />
+      </div>
     </div>
   );
 }
+

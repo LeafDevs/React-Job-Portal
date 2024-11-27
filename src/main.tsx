@@ -14,6 +14,7 @@ import Training from './paths/training/index.tsx'
 import Settings from './paths/settings/index.tsx'
 import Messages from './paths/messages/index.tsx'
 import Profile from './paths/profile/index.tsx'
+import Employers from './paths/employers/index.tsx'
 createRoot(document.getElementById('root')!).render(
   <Router>
       <Routes>
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
         <Route path='/settings' element={<Settings />}/>
         <Route path='/messages' element={<Messages />}/>
         <Route path='/profile/:id' element={<Profile />}/>
+        <Route path='/employers' element={<Employers />}/>
       </Routes>
   </Router>
 )
