@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Nav from '@/components/ui/nav';
 import Footer from '@/components/ui/footer';
 import { useParams } from 'react-router-dom';
 import EmojiPicker from 'emoji-picker-react';
-import { Mail, Calendar, MapPin, Globe, SmilePlus, ImagePlus, X, User, Trash2 } from 'lucide-react';
+import { Mail, Calendar, MapPin, Globe, SmilePlus, ImagePlus, X, User, Trash2, Twitter, Github, Linkedin } from 'lucide-react';
 
 interface Profile {
   id: string;
@@ -34,12 +34,6 @@ interface Post {
   images?: string[];
 }
 
-// interface SearchResult {
-//   id: string;
-//   name: string;
-//   profile_info: Profile['profile_info'];
-// }
-
 interface UserData {
   id: string;
   following: string[];
@@ -58,19 +52,8 @@ export default function Profile() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [canPost, setCanPost] = useState(false);
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      window.location.href = "/auth";
-      return;
-    }
 
-    document.title = 'Profile | HHS';
-    fetchProfile();
-    fetchPosts();
-  }, [id]);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`https://api.lesbians.monster/posts/${id}`, {
@@ -89,9 +72,9 @@ export default function Profile() {
     } catch (err) {
       console.error('Error fetching posts:', err);
     }
-  };
+  }, [id]);
 
-  const uploadPost = async (post: Post) => {
+  const uploadPost = useCallback(async (post: Post) => {
     try {
       const token = localStorage.getItem('token');
       const imagePromises = postImages.map(file => {
@@ -148,9 +131,9 @@ export default function Profile() {
       console.error('Error creating post:', err);
       setError(err instanceof Error ? err.message : 'Failed to create post');
     }
-  };
+  }, [postImages]);
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`https://api.lesbians.monster/user/${id}`, {
@@ -187,9 +170,21 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const handleFollow = async () => {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = "/auth";
+      return;
+    }
+
+    document.title = 'Profile | HHS';
+    fetchProfile();
+    fetchPosts();
+  }, [id, fetchProfile, fetchPosts]);
+
+  const handleFollow = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(`https://api.lesbians.monster/follow/${id}`, {
@@ -212,7 +207,7 @@ export default function Profile() {
     } catch (err) {
       console.error('Error updating follow status:', err);
     }
-  };
+  }, [id, isFollowing]);
 
   if (loading) {
     return (
@@ -286,6 +281,42 @@ export default function Profile() {
                 <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl">
                   {profile?.profile_info.bio}
                 </p>
+                
+                {/* Social Links */}
+                <div className="flex justify-center space-x-6">
+                  {profile?.profile_info.social_links?.twitter && (
+                    <a 
+                      href={"https://x.com/" + profile.profile_info.social_links.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 hover:text-blue-400 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                    >
+                      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                      </svg>
+                    </a>
+                  )}
+                  {profile?.profile_info.social_links?.github && (
+                    <a 
+                      href={"https://github.com/" + profile.profile_info.social_links.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+                    >
+                      <Github className="h-6 w-6" />
+                    </a>
+                  )}
+                  {profile?.profile_info.social_links?.linkedin && (
+                    <a 
+                      href={"https://linkedin.com/in/" + profile.profile_info.social_links.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-500 transition-colors"
+                    >
+                      <Linkedin className="h-6 w-6" />
+                    </a>
+                  )}
+                </div>
               </div>
 
               {!isOwnProfile ? (
@@ -326,13 +357,22 @@ export default function Profile() {
                 <div className="text-center">
                   <div className="text-gray-600 dark:text-gray-400">
                     <Mail className="h-6 w-6 mx-auto mb-2" />
-                    <span>{profile?.email}</span>
+                    <a href={`mailto:${profile?.email}`} className="hover:text-blue-500 transition-colors">
+                      {profile?.email}
+                    </a>
                   </div>
                 </div>
                 <div className="text-center">
                   <div className="text-gray-600 dark:text-gray-400">
                     <Globe className="h-6 w-6 mx-auto mb-2" />
-                    <span>Portfolio</span>
+                    <a 
+                      href={profile?.profile_info.portfolio} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:text-blue-500 transition-colors"
+                    >
+                      Portfolio
+                    </a>
                   </div>
                 </div>
               </div>
@@ -526,4 +566,3 @@ export default function Profile() {
     </div>
   );
 }
-

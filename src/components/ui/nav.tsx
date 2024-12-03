@@ -1,5 +1,5 @@
 // Import necessary dependencies
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Sun, Moon, Home as HomeIcon, Briefcase as JobIcon, LogIn as AuthIcon, Globe, Users, Library, Settings2, LogOut } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -151,6 +151,23 @@ export default function Nav() {
     };
   }, []);
 
+  // Memoize navigation items to prevent unnecessary re-renders
+  const navigationItems = useMemo(() => [
+    { name: 'Home', icon: <HomeIcon className="h-5 w-5" />, path: "/" },
+    { name: 'Jobs', icon: <JobIcon className="h-5 w-5" />, path: "/postings" },
+    { name: 'Employers', icon: <Users className="h-5 w-5" />, path: "/employers" },
+    { name: 'Resources', icon: <Library className="h-5 w-5" />, path: "/training" },
+    ...(localStorage.getItem('token') ? [
+      { name: 'Messages', icon: <EnvelopeOpenIcon className="h-5 w-5" />, path: "/messages" },
+      { name: 'Settings', icon: <Settings2 className="h-5 w-5" />, path: "/settings" }
+    ] : []),
+    { 
+      name: localStorage.getItem('token') ? 'Dashboard' : 'Login', 
+      icon: <AuthIcon className="h-5 w-5" />, 
+      path: localStorage.getItem('token') ? "/dash" : "/auth" 
+    }
+  ], []);
+
   return (
     // Main navigation header with dark glass effect
     <header className={`bg-[rgba(0,0,0,0.6)] backdrop-blur-md fixed w-full z-[100] transition-all duration-300 shadow-lg ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -252,21 +269,7 @@ export default function Nav() {
               {/* Navigation Links */}
               <div className="flex-grow p-6">
                 <ul className="space-y-6">
-                  {[
-                    { name: 'Home', icon: <HomeIcon className="h-5 w-5" />, path: "/" },
-                    { name: 'Jobs', icon: <JobIcon className="h-5 w-5" />, path: "/postings" },
-                    { name: 'Employers', icon: <Users className="h-5 w-5" />, path: "/employers" },
-                    { name: 'Resources', icon: <Library className="h-5 w-5" />, path: "/training" },
-                    ...(localStorage.getItem('token') ? [
-                      { name: 'Messages', icon: <EnvelopeOpenIcon className="h-5 w-5" />, path: "/messages" },
-                      { name: 'Settings', icon: <Settings2 className="h-5 w-5" />, path: "/settings" }
-                    ] : []),
-                    { 
-                      name: localStorage.getItem('token') ? 'Dashboard' : 'Login', 
-                      icon: <AuthIcon className="h-5 w-5" />, 
-                      path: localStorage.getItem('token') ? "/dash" : "/auth" 
-                    }
-                  ].map((item) => (
+                  {navigationItems.map((item) => (
                     <motion.li
                       key={item.name}
                       initial={{ x: 20, opacity: 0 }}

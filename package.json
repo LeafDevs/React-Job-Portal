@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview --host",
-    "build:prod": "npm run build && cd dist && rsync -avz -e 'ssh -i ~/Downloads/key.pem' * ubuntu@ssh.lesbians.monster:/home/ubuntu/fent && ssh -i ~/Downloads/key.pem ubuntu@ssh.lesbians.monster 'cd ~ && sudo rm -rf /var/www/frontend && sudo cp -r fent /var/www/frontend && sudo chmod 777 /var/www/frontend/'"
+    "build:prod": "npm run build && cd dist && rsync -avz -e 'ssh -i ~/Downloads/key.pem' * ubuntu@ssh.lesbians.monster:/home/ubuntu/fent && ssh -i ~/Downloads/key.pem ubuntu@ssh.lesbians.monster 'cd ~ && sudo rm -rf /var/www/frontend && sudo cp -r fent /var/www/frontend && sudo chmod 777 /var/www/frontend/'",
+    "scan": "react-scan",
+    "scan:fix": "react-scan --fix"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -59,6 +61,7 @@
     "react-resizable-panels": "^2.1.6",
     "react-responsive": "^10.0.0",
     "react-router-dom": "^6.26.2",
+    "react-scan": "^0.0.35",
     "recharts": "^2.13.3",
     "sharp": "^0.33.5",
     "sonner": "^1.7.0",

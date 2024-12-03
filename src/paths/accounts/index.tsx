@@ -33,7 +33,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, UserCheck, Trash, Search, Plus, Check, Shield, Briefcase, GraduationCap, Mail, Key } from 'lucide-react';
+import { MoreHorizontal, UserCheck, Trash, Search, Plus, Check, Shield, Briefcase, GraduationCap, Mail, Key, LogIn } from 'lucide-react';
 
 // Define the Account interface for type checking
 interface Account {
@@ -189,6 +189,13 @@ export default function AdminAccounts() {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      if(action === "get-token") {
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        window.location.href = "/dash";
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(`Failed to ${action} account`);
@@ -493,6 +500,14 @@ export default function AdminAccounts() {
 
                           <DropdownMenuSeparator />
                           
+                          <DropdownMenuItem
+                            onClick={() => handleAccountAction(account.id, 'get-token')}
+                            className="text-green-600"
+                          >
+                            <LogIn className="mr-2 h-4 w-4" />
+                            Login as
+                          </DropdownMenuItem>
+
                           <DropdownMenuItem
                             onClick={() => handleAccountAction(account.id, 'verify-email')}
                             className="text-blue-600"

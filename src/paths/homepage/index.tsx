@@ -127,7 +127,7 @@ export default function HomePage() {
       <Nav />
       <main className="flex-grow">
         {/* Hero section with image carousel */}
-        <section className="relative h-[50vh] md:h-[70vh] overflow-hidden">
+        <section className="relative h-[70vh] md:h-[80vh] overflow-hidden">
           {imageUrls.map((imageUrl, index) => (
             <div
               key={index}
@@ -174,19 +174,26 @@ export default function HomePage() {
               {/* Carousel navigation dots */}
               <div className={`flex mt-4 md:mt-8 space-x-4 relative z-10`}>
                 {[0, 1, 2].map((index) => (
-                  <button
+                  <svg
                     key={index}
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
                     onClick={() => {
                       setCurrentDataIndex(index);
                       setCurrentImageIndex(index === 0 ? 0 : index === 1 ? 1 : 2);
                     }}
-                    className={`aspect-square w-2 h-2 md:w-3 md:h-3 rounded-[50%] cursor-pointer transition-colors duration-300 ${
-                      currentDataIndex === index
-                        ? 'bg-[#C7AC59]'
-                        : 'bg-white bg-opacity-50 hover:bg-opacity-75'
-                    }`}
+                    className="cursor-pointer"
                     aria-label={`Switch to image ${index + 1}`}
-                  />
+                  >
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="8"
+                      fill={currentDataIndex === index ? '#C7AC59' : 'rgba(255,255,255,0.5)'}
+                      className="transition-colors duration-300 hover:fill-opacity-75"
+                    />
+                  </svg>
                 ))}
               </div>
             </div>

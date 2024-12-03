@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Users, Library, Calendar, Bell, FileText, Settings, Briefcase } from 'lucide-react';
+import { GraduationCap, Users, Library, Calendar, Bell, FileText, Settings, Briefcase, AlertCircle, BookOpen, LogOut, Music, Star, User, PartyPopper } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,11 +16,6 @@ import {
 } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import t from "@/lib/translate"
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Dashboard() {
   // State variables for user data and UI controls
@@ -47,6 +42,7 @@ export default function Dashboard() {
     requirements: '',
     location: '',
     tags: [] as string[],
+    questions: [] as string[],
   });
 
   // Effect to handle authentication token from URL
@@ -125,25 +121,27 @@ export default function Dashboard() {
         // Set up quick links based on user type
         const language = localStorage.getItem("language") || "en";
         const links = data.type === 'student' ? [
-          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
-          { icon: Calendar, label: await t("Schedule", language), tooltip: await t("This is not implemented yet.", language), redirect: false, menu: "calendar" },
+          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet, BUT the page exists.", language), redirect: true, location: "/messages" },
+          { icon: Calendar, label: await t("Training", language), tooltip: await t("View training resources", language), redirect: true, menu: "/training" },
           { icon: Briefcase, label: await t("Postings", language), tooltip: await t("View job postings", language), redirect: true, location: "/postings" },
-          { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings" },
+          { icon: Settings, label: await t("Settings", language), tooltip: await t("Change your settings", language), redirect: true, location: "/settings"},
         ] : data.type === 'admin' ? [
-          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
-          { icon: Briefcase, label: await t("Accounts", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/admin/accounts" },
+          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet, BUT the page exists.", language), redirect: true, location: "/messages" },
+          { icon: Briefcase, label: await t("Accounts", language), tooltip: await t("View Accounts", language), redirect: true, location: "/admin/accounts" },
           { icon: Briefcase, label: await t("Posts", language), tooltip: await t("View all Posts.", language), redirect: true, location: "/admin/posts" },
-          { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings"},
+          { icon: Settings, label: await t("Settings", language), tooltip: await t("Change your settings", language), redirect: true, location: "/settings"},
+          { icon: Briefcase, label: await t("Profile", language), tooltip: await t("View your profile", language), redirect: true, location: "/profile/" + data.id},
         ] : data.type === 'employer' ? [
-          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
-          { icon: Calendar, label: await t("Schedule", language), tooltip: await t("This is not implemented yet.", language), redirect: false, menu: "calendar" },
-          { icon: Briefcase, label: await t("Create Post", language), tooltip: await t("Create a new job posting", language), redirect: false, onClick: () => setIsPostingDialogOpen(true) },
-          { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings"},
+          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet, BUT the page exists.", language), redirect: true, location: "/messages" },
+          { icon: Briefcase, label: await t("Applications", language), tooltip: await t("View all applications", language), redirect: true, location: "/employer/applications" },
+          { icon: Briefcase, label: await t("New Post", language), tooltip: await t("Create a new job posting", language), redirect: false, onClick: () => setIsPostingDialogOpen(true) },
+          { icon: Settings, label: await t("Settings", language), tooltip: await t("Change your settings", language), redirect: true, location: "/settings"},
+          { icon: Briefcase, label: await t("Profile", language), tooltip: await t("View your profile", language), redirect: true, location: "/profile/" + data.id},
         ] : [
-          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/messages" },
+          { icon: FileText, label: await t("Messages", language), tooltip: await t("This is not implemented yet, BUT the page exists.", language), redirect: true, location: "/messages" },
           { icon: Briefcase, label: await t("Applications", language), tooltip: await t("View all applications", language), redirect: true, location: "/employer/applications"},
           { icon: Briefcase, label: await t("Posts", language), tooltip: await t("View all Posts.", language), redirect: false, menu: "posts" },
-          { icon: Settings, label: await t("Settings", language), tooltip: await t("This is not implemented yet.", language), redirect: true, location: "/settings"},
+          { icon: Settings, label: await t("Settings", language), tooltip: await t("Change your settings", language), redirect: true, location: "/settings"},
         ];
 
         // Remove duplicate quick links
@@ -276,10 +274,12 @@ export default function Dashboard() {
   const handleCreatePosting = async () => {
     const token = localStorage.getItem('token');
     try {
+      // Filter out empty questions
+      const filteredQuestions = questions.filter(q => q.trim() !== '');
+      
       const payload = {
         ...postingData,
-        questions: JSON.stringify(questions),
-        tags: JSON.stringify(postingData.tags)
+        questions: filteredQuestions // Use the questions array directly
       };
 
       console.log('Submitting payload:', payload);
@@ -297,7 +297,7 @@ export default function Dashboard() {
       
       // Reset form after successful submission
       setIsPostingDialogOpen(false);
-      setQuestions([]);
+      setQuestions([]); // Reset questions array
       setPostingData({
         title: '',
         payrate: '',
@@ -305,6 +305,7 @@ export default function Dashboard() {
         requirements: '',
         location: '',
         tags: [],
+        questions: [], // Reset questions in posting data
       });
     } catch (error) {
       console.error('Error creating posting:', error);
@@ -314,331 +315,91 @@ export default function Dashboard() {
 
   // Render the dashboard UI
   return (
-    <div className="flex flex-col bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800  min-h-screen">
+    <div className="flex flex-col bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800 min-h-screen">
       <Nav />
       <div className="flex-grow container mx-auto px-4 py-8 mt-24 mb-28">
+        {/* Error Alert */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex items-center">
+            <AlertCircle className="h-5 w-5 mr-2" />
             {error}
           </div>
         )}
-        <div className="relative mb-6">
-          <div className="relative h-32 rounded-lg">
-            <div id='banner' className={`absolute inset-0 opacity-90 rounded-lg ${userBackground.startsWith('bg-') ? userBackground : ''}`} 
-              style={!userBackground.startsWith('bg-') ? { backgroundImage: userBackground, backgroundSize: 'cover', backgroundPosition: 'center' } : {}} />
+
+        {/* Profile Banner Section */}
+        <div className="relative mb-8">
+          <div className="relative h-40 rounded-lg overflow-hidden">
+            <div id='banner' 
+              className={`absolute inset-0 opacity-90 rounded-lg transition-all duration-300 ${userBackground.startsWith('bg-') ? userBackground : ''}`} 
+              style={!userBackground.startsWith('bg-') ? { backgroundImage: userBackground, backgroundSize: 'cover', backgroundPosition: 'center' } : {}} 
+            />
             <div className={`absolute inset-0 bg-black/${userBackground.startsWith('bg-gradient') ? '30' : '0'} rounded-lg`} />
+            
+            {/* Profile Settings Button */}
             <div className="absolute top-4 right-4 z-10">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="bg-black/30 hover:bg-black/50">
+                  <Button variant="ghost" className="bg-black/30 hover:bg-black/50 transition-colors">
                     <Settings className="h-5 w-5 text-white" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-white/80 dark:bg-zinc-800/80 backdrop-blur-sm">
-                  <DropdownMenuItem onClick={() => setIsDialogOpen(true)} className="text-zinc-900 dark:text-zinc-100">
+                <DropdownMenuContent align="end" className="bg-white/95 dark:bg-zinc-800/95 backdrop-blur-md border border-zinc-200 dark:border-zinc-700">
+                  <DropdownMenuItem onClick={() => setIsDialogOpen(true)} className="text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-700">
+                    <User className="h-4 w-4 mr-2" />
                     Edit Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => window.location.href = "/logout"} className="text-red-600 dark:text-red-400">
+                  <DropdownMenuItem onClick={() => window.location.href = "/logout"} className="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
+                    <LogOut className="h-4 w-4 mr-2" />
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end p-4">
+
+          {/* Profile Info */}
+          <div className="absolute -bottom-4 left-8 right-8 flex justify-between items-end">
             <div className="flex items-end">
               {isLoading ? (
-                <div className="h-20 w-20 -mb-2 bg-gray-200 animate-pulse rounded-full"></div>
+                <div className="h-24 w-24 bg-gray-200 animate-pulse rounded-full border-4 border-white dark:border-zinc-800"></div>
               ) : (
-                <Avatar className="h-20 w-20 -mb-2 border-4 border-white shadow-lg">
+                <Avatar className="h-24 w-24 border-4 border-white dark:border-zinc-800 shadow-lg hover:scale-105 transition-transform cursor-pointer"
+                  onClick={() => setIsDialogOpen(true)}>
                   <AvatarImage src={profileImage} alt={userName} />
                   <AvatarFallback>{userName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
                 </Avatar>
               )}
-              <div className="ml-4 mb-1">
-                <h1 className="text-2xl font-bold text-white" data-notranslate>{userName}</h1>
-                <p className="text-gray-100" data-notranslate>{userRole}</p>
+              <div className="ml-4 mb-6">
+                <h1 className="text-2xl font-bold text-white drop-shadow-md" data-notranslate>{userName}</h1>
+                <p className="text-gray-100 drop-shadow-md" data-notranslate>{userRole}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <Separator className="my-8" />
-
-        {/* Profile Edit Dialog */}
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="bg-[#F5F5F5] dark:bg-zinc-800 border-[#C7AC59]">
-            <DialogHeader>
-              <DialogTitle className="text-[#341A00] dark:text-white">Edit Profile</DialogTitle>
-              <DialogDescription className="text-[#5A3000] dark:text-zinc-300">
-                Update your profile picture, banner and details.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1 text-[#341A00] dark:text-white">Banner Image</label>
-                <div 
-                  className={`h-24 w-full rounded-lg bg-cover bg-center cursor-pointer ${
-                    bannerPreview ? '' : userBackground.startsWith('bg-gradient') ? userBackground : ''
-                  }`}
-                  style={bannerPreview ? { backgroundImage: `url(${bannerPreview})`, backgroundSize: 'cover', backgroundPosition: 'center' } : 
-                         !userBackground.startsWith('bg-gradient') ? { backgroundImage: userBackground, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                  onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.onchange = (e) => handleBannerChange({ target: { files: (e.target as HTMLInputElement).files } });
-                    input.click();
-                  }}
-                ></div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1 text-[#341A00] dark:text-white">Profile Picture</label>
-                <Avatar 
-                  className="mb-2 h-24 w-24 cursor-pointer"
-                  onClick={() => {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = 'image/*';
-                    input.onchange = (e: Event) => {
-                      const target = e.target as HTMLInputElement;
-                      if (target.files && target.files[0]) {
-                        handleImageChange({
-                          target: { files: target.files }
-                        });
-                      }
-                    };
-                    input.click();
-                  }}
-                >
-                  <AvatarImage src={imagePreview || profileImage} alt="Preview" />
-                  <AvatarFallback>{userName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                </Avatar>
-              </div>
-            </div>
-            <DialogFooter className="flex flex-col w-full">
-              <div className="flex justify-start">
-                <Button 
-                  variant="outline" 
-                  className="mr-2"
-                  onClick={() => setShowEmployerInfo(!showEmployerInfo)}
-                >
-                  Become an Employer
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    if (imagePreview) {
-                      updateProfilePicture(imagePreview);
-                    }
-                    if (bannerPreview) {
-                      updateBanner(bannerPreview);
-                    }
-                  }}
-                  className="border-[#C7AC59] text-[#C7AC59] hover:bg-[#C7AC59] hover:text-white"
-                >
-                  Update
-                </Button>
-              </div>
-              {showEmployerInfo && (
-                <div className="mt-4 p-4 bg-zinc-100 dark:bg-zinc-700 rounded-lg">
-                  <p className="text-sm text-zinc-700 dark:text-zinc-200">
-                    To become an employer, please send an email to{' '}
-                    <a 
-                      href="mailto:jobs@goldenrams.com"
-                      className="text-[#C7AC59] hover:underline"
-                    >
-                      jobs@goldenrams.com
-                    </a>
-                  </p>
-                </div>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Job Posting Dialog */}
-        <Dialog open={isPostingDialogOpen} onOpenChange={setIsPostingDialogOpen}>
-          <DialogContent className="bg-white dark:bg-zinc-900 border-[#C7AC59] dark:border-[#C7AC59]/50">
-            <DialogHeader>
-              <DialogTitle className="text-zinc-900 dark:text-zinc-50">Create Job Posting</DialogTitle>
-              <DialogDescription className="text-zinc-500 dark:text-zinc-400">
-                Fill in the details for your new job posting.
-              </DialogDescription>
-            </DialogHeader>
-            <ScrollArea className="max-h-[600px] pr-4">
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-zinc-900 dark:text-zinc-50">Job Title</Label>
-                  <Input 
-                    value={postingData.title}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 32) {
-                        setPostingData({...postingData, title: value});
-                      }
-                    }}
-                    className="bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
-                  />
-                </div>
-                <div>
-                  <Label className="text-zinc-900 dark:text-zinc-50">Pay Rate</Label>
-                  <Input 
-                    value={postingData.payrate}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (!isNaN(parseFloat(value))) {
-                        setPostingData({...postingData, payrate: value});
-                      }
-                    }}
-                    placeholder="e.g., 15.00 or 50000.00"
-                    className="bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
-                  />
-                </div>
-                <div>
-                  <Label className="text-zinc-900 dark:text-zinc-50">Description</Label>
-                  <Textarea 
-                    value={postingData.description}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 150) {
-                        setPostingData({...postingData, description: value});
-                      }
-                    }}
-                    className="bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 min-h-[100px]"
-                  />
-                </div>
-                <div>
-                  <Label className="text-zinc-900 dark:text-zinc-50">Requirements</Label>
-                  <Textarea 
-                    value={postingData.requirements}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value.length <= 64) {
-                        setPostingData({...postingData, requirements: value});
-                      }
-                    }}
-                    className="bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 min-h-[100px]"
-                  />
-                </div>
-                <div>
-                  <Label className="text-zinc-900 dark:text-zinc-50">Location</Label>
-                  <Input 
-                    value={postingData.location}
-                    onChange={(e) => setPostingData({...postingData, location: e.target.value})}
-                    className="bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
-                  />
-                </div>
-                <div>
-                  <Label className="text-zinc-900 dark:text-zinc-50">Tags</Label>
-                  <Select 
-                    onValueChange={(value) => setPostingData({...postingData, tags: [...postingData.tags, value]})}
-                  >
-                    <SelectTrigger className="bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
-                      <SelectValue placeholder="Select tags" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
-                      <SelectItem value="office">Office</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="customer-service">Customer Service</SelectItem>
-                      <SelectItem value="food-service">Food Service</SelectItem>
-                      <SelectItem value="teamwork">Teamwork</SelectItem>
-                      <SelectItem value="warehouse">Warehouse</SelectItem>
-                      <SelectItem value="logistics">Logistics</SelectItem>
-                      <SelectItem value="sales">Sales</SelectItem>
-                      <SelectItem value="part-time">Part Time</SelectItem>
-                      <SelectItem value="full-time">Full Time</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {postingData.tags.map((tag, index) => (
-                      <Button
-                        key={index}
-                        variant="secondary"
-                        size="sm"
-                        className="bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600"
-                        onClick={() => setPostingData({
-                          ...postingData,
-                          tags: postingData.tags.filter((_, i) => i !== index)
-                        })}
-                      >
-                        {tag} ×
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-zinc-900 dark:text-zinc-50">Application Questions ({questions.length}/8)</Label>
-                  {Array.isArray(questions) && questions.map((question, index) => (
-                    <div key={index} className="flex gap-2 mt-2">
-                      <Input 
-                        value={question}
-                        onChange={(e) => {
-                          const newQuestions = Array.isArray(questions) ? [...questions] : [];
-                          newQuestions[index] = e.target.value;
-                          setQuestions(newQuestions);
-                        }}
-                        className="bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
-                      />
-                      <Button
-                        variant="destructive"
-                        onClick={() => setQuestions(Array.isArray(questions) ? questions.filter((_, i) => i !== index) : [])}
-                        className="hover:bg-red-600 dark:hover:bg-red-700"
-                      >
-                        ×
-                      </Button>
-                    </div>
-                  ))}
-                  {Array.isArray(questions) && questions.length < 8 && (
-                    <Button
-                      className="mt-2 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-900 dark:text-zinc-50"
-                      variant="outline"
-                      onClick={() => setQuestions(Array.isArray(questions) ? [...questions, ''] : [''])}
-                    >
-                      Add Question
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </ScrollArea>
-            <DialogFooter className="gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsPostingDialogOpen(false)}
-                className="bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-900 dark:text-zinc-50"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleCreatePosting}
-                className="bg-[#C7AC59] hover:bg-[#B69B48] text-white dark:text-zinc-900"
-              >
-                Create Posting
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Separator className="my-12" />
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Announcements Card */}
-          <Card className="col-span-2">
-            <CardHeader>
+          <Card className="col-span-2 hover:shadow-lg transition-shadow">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Announcements</CardTitle>
+              <Bell className="h-5 w-5 text-[#C7AC59]" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {[
-                  { title: "Homecoming Spirit Week", date: "September 30th - October 4th" },
-                  { title: "NO SCHOOL - Teacher Professional Development Day", date: "October 9th" },
-                  { title: "\"FALL FOLLIES\" HIGH SCHOOL TALENT SHOW", date: "October 17th" },
+                  { title: "Homecoming Spirit Week", date: "September 30th - October 4th", icon: PartyPopper },
+                  { title: "NO SCHOOL - Teacher Professional Development Day", date: "October 9th", icon: BookOpen },
+                  { title: "\"FALL FOLLIES\" HIGH SCHOOL TALENT SHOW", date: "October 17th", icon: Music },
                 ].map((announcement, index) => (
-                  <div key={index} className="flex justify-between items-center">
+                  <div key={index} className="flex items-center p-4 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <announcement.icon className="h-8 w-8 text-[#C7AC59] mr-4" />
                     <div>
-                      <h3 className="font-semibold">{announcement.title}</h3>
+                      <h3 className="font-semibold text-lg">{announcement.title}</h3>
                       <p className="text-sm text-zinc-500 dark:text-zinc-400">{announcement.date}</p>
                     </div>
-                    <Bell className="h-5 w-5 text-zinc-400" />
                   </div>
                 ))}
               </div>
@@ -646,19 +407,19 @@ export default function Dashboard() {
           </Card>
 
           {/* Quick Links Card */}
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow h-full">
             <CardHeader>
-              <CardTitle>Quick Links</CardTitle>
+              <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="h-[calc(100%-4rem)]">
+              <div className="grid grid-cols-2 gap-4 h-full">
                 {quickLinks.map((item, index) => (
                   <TooltipProvider key={index}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button 
                           variant="outline" 
-                          className="h-24 flex flex-col items-center justify-center" 
+                          className="w-full h-full flex flex-col items-center justify-center hover:bg-[#C7AC59]/10 hover:border-[#C7AC59] transition-colors" 
                           onClick={() => {
                             if (item.redirect && item.location) {
                               window.location.href = item.location;
@@ -667,7 +428,7 @@ export default function Dashboard() {
                             }
                           }}
                         >
-                          <item.icon className="h-8 w-8 mb-2" />
+                          <item.icon className="h-16 w-16 mb-2 text-[#C7AC59]" style={{ height: '50%', width: '50%' }} />
                           <span>{item.label}</span>
                         </Button>
                       </TooltipTrigger>
@@ -683,29 +444,34 @@ export default function Dashboard() {
         </div>
 
         {/* Featured Programs Section */}
-        <h2 className="text-2xl font-bold mt-12 mb-6 text-zinc-950 dark:text-white">Featured Programs</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { icon: GraduationCap, title: "Career Development", description: "Explore career paths and opportunities.", redirect: "/training" },
-            { icon: Users, title: "Networking", description: "Connect with peers and professionals.", redirect: "/training#networking" },
-            { icon: Library, title: "Skill Building", description: "Enhance your skills with workshops.", redirect: "/training#interview" },
-            { icon: Calendar, title: "Events", description: "Stay updated on upcoming events.", redirect: "/#events" },
-          ].map((program, index) => (
-            <Card key={index} className="flex flex-col h-full">
-              <CardHeader>
-                <program.icon className="w-12 h-12 mb-4 text-[#C7AC59]" />
-                <CardTitle>{program.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <CardDescription>{program.description}</CardDescription>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full" onClick={() => {
-                  window.location.href = program.redirect;
-                }}>Learn More</Button>
-              </CardFooter>
-            </Card>
-          ))}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-8 text-zinc-950 dark:text-white flex items-center">
+            <Star className="h-6 w-6 text-[#C7AC59] mr-2" />
+            Featured Programs
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: GraduationCap, title: "Career Development", description: "Explore career paths and opportunities.", redirect: "/training" },
+              { icon: Users, title: "Networking", description: "Connect with peers and professionals.", redirect: "/training#networking" },
+              { icon: Library, title: "Skill Building", description: "Enhance your skills with workshops.", redirect: "/training#interview" },
+              { icon: Calendar, title: "Events", description: "Stay updated on upcoming events.", redirect: "/#events" },
+            ].map((program, index) => (
+              <Card key={index} className="group hover:shadow-lg transition-all cursor-pointer" onClick={() => window.location.href = program.redirect}>
+                <CardHeader>
+                  <program.icon className="w-12 h-12 mb-4 text-[#C7AC59] group-hover:scale-110 transition-transform" />
+                  <CardTitle>{program.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>{program.description}</CardDescription>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" className="w-full group-hover:bg-[#C7AC59] group-hover:text-white transition-colors">
+                    Learn More
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
       <Footer string={'blocky'} />
